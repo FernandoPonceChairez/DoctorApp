@@ -1,92 +1,266 @@
-import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+} from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons'; // Importamos íconos de Ionicons
 
-const doctors = [
-  { name: 'Dr. Serena Gomez', specialty: 'Medicine Specialist', experience: '8 Years', patients: '1.8K', image: 'https://via.placeholder.com/100', reviews: '2.05K' },
-  { name: 'Dr. Asma Khan', specialty: 'Medicine Specialist', experience: '5 Years', patients: '2.7K', image: 'https://via.placeholder.com/100', reviews: '1.5K' },
+const categories = [
+  { id: '1', name: 'Pediatrician', icon: 'ios-heart' },
+  { id: '2', name: 'Neurosurgeon', icon: 'ios-brain' },
+  { id: '3', name: 'Cardiologist', icon: 'ios-heart-circle' },
+  { id: '4', name: 'Psychiatrist', icon: 'ios-happy' },
 ];
 
-export default function MainScreen() {
+const doctors = [
+  {
+    name: 'Dr. Serena Gomez',
+    specialty: 'Medicine Specialist',
+    experience: '8 Years',
+    patients: '1.8K',
+    image: 'https://via.placeholder.com/100',
+    reviews: '2.05K',
+  },
+  {
+    name: 'Dr. Asma Khan',
+    specialty: 'Medicine Specialist',
+    experience: '5 Years',
+    patients: '2.7K',
+    image: 'https://via.placeholder.com/100',
+    reviews: '1.5K',
+  },
+];
+
+const MainScreen = () => {
   const navigation = useNavigation();
+  const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuVisible(!isMenuVisible);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Find Your Specialist</Text>
-
-      <FlatList
-        data={doctors}
-        keyExtractor={(item) => item.name}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={styles.doctorCard} 
-            onPress={() => navigation.navigate('DoctorDetails', { doctor: item })}
-          >
-            <Image source={{ uri: item.image }} style={styles.doctorImage} />
-            <View style={styles.infoContainer}>
-              <Text style={styles.doctorName}>{item.name}</Text>
-              <Text style={styles.doctorSpecialty}>{item.specialty}</Text>
-              <Text style={styles.doctorDetails}>Experience: {item.experience}</Text>
-              <Text style={styles.doctorDetails}>Patients: {item.patients}</Text>
-            </View>
+      {/* NavBar */}
+      <View style={styles.navBar}>
+        <View>
+          <Text style={styles.navBarTitle}>Find Your</Text>
+          <Text style={styles.navBarTitleBold}>Specialist</Text>
+        </View>
+        <View style={styles.navBarIcons}>
+          <TouchableOpacity onPress={() => navigation.navigate('SearchSpecialist')}>
+            <Ionicons name="search" size={24} color="#4E89E8" />
           </TouchableOpacity>
-        )}
-      />
+          <TouchableOpacity onPress={() => navigation.navigate('Messages')} style={{ marginLeft: 20 }}>
+            <Ionicons name="chatbubble-ellipses-outline" size={24} color="#4E89E8" />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-      {/* Footer con iconos */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={() => navigation.navigate('MenuScreen')}>
-          <Ionicons name="menu" size={30} color="#4F8EF7" />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Banner promocional */}
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>Looking For Your Desired Specialist Doctor?</Text>
+          <Text style={styles.bannerSubText}>Dr. Salina Zaman</Text>
+        </View>
+
+        {/* Categorías */}
+        <View style={styles.categoryContainer}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <FlatList
+            data={categories}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.categoryCard}>
+                <Ionicons name={item.icon} size={30} color="#4E89E8" />
+                <Text style={styles.categoryText}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+
+        {/* Doctores disponibles */}
+        <View style={styles.doctorContainer}>
+          <Text style={styles.sectionTitle}>Available Doctor</Text>
+          <FlatList
+            data={doctors}
+            keyExtractor={(item) => item.name}
+            renderItem={({ item }) => (
+              <View style={styles.doctorCard}>
+                <Image source={{ uri: item.image }} style={styles.doctorImage} />
+                <View style={styles.infoContainer}>
+                  <Text style={styles.doctorName}>{item.name}</Text>
+                  <Text style={styles.doctorSpecialty}>{item.specialty}</Text>
+                  <Text style={styles.doctorDetails}>Experience: {item.experience}</Text>
+                  <Text style={styles.doctorDetails}>Patients: {item.patients}</Text>
+                </View>
+              </View>
+            )}
+          />
+        </View>
+      </ScrollView>
+
+      {/* Menú flotante */}
+      {isMenuVisible && (
+        <View style={styles.floatingMenu}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('MyAppointment'); // Pantalla My Appointment
+            }}
+          >
+            <Ionicons name="calendar-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>My Appointment</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('Profile'); // Pantalla Profile
+            }}
+          >
+            <Ionicons name="person-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('Settings'); // Pantalla Settings
+            }}
+          >
+            <Ionicons name="settings-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              alert('Logged Out');
+            }}
+          >
+            <Ionicons name="log-out-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Tab Bar */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity style={styles.homeButton}>
+          <Ionicons name="home" size={24} color="#FFF" />
+          <Text style={styles.tabLabel}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SearchSpecialist')}>
-          <Ionicons name="search" size={30} color="#4F8EF7" />
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Doctors')}>
+          <MaterialCommunityIcons name="stethoscope" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabelInactive}>Doctors</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')}>
-          <Ionicons name="notifications" size={30} color="#4F8EF7" />
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
+          <Ionicons name="notifications" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabelInactive}>Alerts</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SettingsScreen')}>
-          <Ionicons name="settings" size={30} color="#4F8EF7" />
+        <TouchableOpacity style={styles.tabItem} onPress={toggleMenu}>
+          <Ionicons name="grid" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabelInactive}>More</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F9FAFC',
     padding: 20,
-    backgroundColor: '#fff',
   },
-  title: {
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  navBarTitle: {
+    fontSize: 20,
+    color: '#333',
+  },
+  navBarTitleBold: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#333',
+  },
+  navBarIcons: {
+    flexDirection: 'row',
+  },
+  banner: {
+    backgroundColor: '#4E89E8',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  bannerText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  bannerSubText: {
+    color: '#FFF',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  categoryContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  categoryCard: {
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 10,
+    marginRight: 10,
+    elevation: 3,
+  },
+  categoryText: {
+    marginTop: 10,
+    fontSize: 12,
+    color: '#333',
+  },
+  doctorContainer: {
     marginBottom: 20,
   },
   doctorCard: {
     flexDirection: 'row',
-    padding: 20,
-    backgroundColor: '#f9f9f9',
-    marginBottom: 10,
+    backgroundColor: '#FFF',
+    padding: 15,
     borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    marginBottom: 10,
+    elevation: 3,
   },
   doctorImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginRight: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 15,
   },
   infoContainer: {
     flex: 1,
-    justifyContent: 'center',
   },
   doctorName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   doctorSpecialty: {
@@ -94,16 +268,67 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   doctorDetails: {
-    color: '#888',
+    color: '#777',
+    fontSize: 12,
   },
-  // Estilos para el footer
-  footer: {
+  tabBar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 15,
+    backgroundColor: '#FFF',
+    height: 70,
     borderTopWidth: 1,
     borderTopColor: '#ddd',
+    borderRadius: 20,
+  },
+  tabItem: {
+    alignItems: 'center',
+  },
+  homeButton: {
+    backgroundColor: '#4E89E8',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    top: -15,
+  },
+  tabLabel: {
+    color: '#FFF',
+    fontSize: 12,
+    marginTop: 5,
+    fontWeight: 'bold',
+  },
+  tabLabelInactive: {
+    color: '#4E89E8',
+    fontSize: 12,
+    marginTop: 5,
+  },
+  floatingMenu: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    right: 20,
+    backgroundColor: '#4E89E8',
+    borderRadius: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    elevation: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFF',
+  },
+  menuText: {
+    marginLeft: 15,
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
+
+export default MainScreen;

@@ -7,11 +7,18 @@ import WelcomeScreen from './WelcomeScreen';
 import SignUpScreen from './SignUpScreen';
 import SignInScreen from './SignInScreen';
 import MainScreen from './MainScreen';
+import DoctorsScreen from './DoctorsScreen';
 import SearchSpecialistScreen from './SearchSpecialistScreen';  // Pantalla de búsqueda de especialistas
 import SearchResultsScreen from './SearchResultsScreen';  // Resultados de búsqueda
 import SpecialistInfoScreen from './SpecialistInfoScreen';  // Información detallada del especialista
 import AppointmentScreen from './AppointmentScreen';  // Pantalla de agendar cita
 import VideoCallScreen from './VideoCallScreen';  // Pantalla de agendar cita
+import NotificationsScreen from './NotificationsScreen';
+import MessagesScreen from './MessagesScreen';
+import ChatScreen from './ChatScreen';
+import MyAppointmentScreen from './MyAppointmentScreen';
+import ProfileScreen from './ProfileScreen';
+import SettingsScreen from './SettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -47,6 +54,47 @@ export default function App() {
         {/* Pantalla principal */}
         <Stack.Screen name="Main" component={MainScreen} />
 
+        <Stack.Screen
+        name="Doctors"
+        component={DoctorsScreen}
+        options={{ title: 'Doctors' }}
+        />
+
+        <Stack.Screen
+          name="Notifications"
+          component={NotificationsScreen}
+          options={{ title: 'Notifications' }}
+        />
+
+        <Stack.Screen
+          name="Messages"
+          component={MessagesScreen}
+          options={{ title: 'Messages' }}
+        />
+
+        <Stack.Screen
+          name="Chat"
+          component={ChatScreen}
+          options={{ title: 'Chat' }}
+        />
+
+        <Stack.Screen
+          name="MyAppointment"
+          component={MyAppointmentScreen}
+          options={{ title: 'Appointments', headerShown: false }} // Título en la barra superior
+        />
+
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ title: 'Profile', headerShown: false }} // Título en la barra superior
+        />
+
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ title: 'Settings', headerShown: false }} // Título en la barra superior
+        />
         {/* Nuevas pantallas */}
         <Stack.Screen name="SearchSpecialist" component={SearchSpecialistScreen} />
         <Stack.Screen name="SearchResults" component={SearchResultsScreen} />

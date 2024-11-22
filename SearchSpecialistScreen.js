@@ -1,45 +1,118 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Importar DateTimePicker
 
 const doctors = [
-  { name: 'Dr. Serena Gomez', specialty: 'Medicine Specialist' },
-  { name: 'Dr. Asma Khan', specialty: 'Medicine Specialist' },
-  { name: 'Dr. John Doe', specialty: 'Cardiologist' },
-  { name: 'Dr. Emily Stone', specialty: 'Dermatologist' },
+  { id: '1', name: 'Dr. Serena Gomez', specialty: 'Cardiologist', area: 'Downtown', clinic: 'New City Clinic' },
+  { id: '2', name: 'Dr. Simata Baroi', specialty: 'Cardiologist', area: 'Uptown', clinic: 'New City Clinic' },
+  { id: '3', name: 'Dr. John Doe', specialty: 'Dermatologist', area: 'Downtown', clinic: 'HealthPlus Center' },
+  { id: '4', name: 'Dr. Emily Stone', specialty: 'Dermatologist', area: 'Uptown', clinic: 'HealthCare Hospital' },
+  { id: '5', name: 'Dr. Asma Khan', specialty: 'Pediatrician', area: 'Suburbs', clinic: 'Child Care Clinic' },
 ];
 
 export default function SearchSpecialistScreen({ navigation }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredDoctors, setFilteredDoctors] = useState(doctors);
+  const [area, setArea] = useState('');
+  const [specialty, setSpecialty] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    const filtered = doctors.filter(doctor =>
-      doctor.name.toLowerCase().includes(query.toLowerCase()) ||
-      doctor.specialty.toLowerCase().includes(query.toLowerCase())
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(false); // Ocultar el selector
+    setDate(currentDate);
+  };
+
+  const handleSearch = () => {
+    const filteredDoctors = doctors.filter(
+      (doctor) =>
+        (area === '' || doctor.area === area) &&
+        (specialty === '' || doctor.specialty === specialty)
     );
-    setFilteredDoctors(filtered);
+
+    navigation.navigate('SearchResults', { results: filteredDoctors });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Search Your Specialist</Text>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Enter doctor name or specialty"
-        value={searchQuery}
-        onChangeText={handleSearch}
-      />
-      <FlatList
-        data={filteredDoctors}
-        keyExtractor={(item) => item.name}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.doctorCard} onPress={() => navigation.navigate('SearchResults', { doctor: item })}>
-            <Text style={styles.doctorName}>{item.name}</Text>
-            <Text style={styles.doctorSpecialty}>{item.specialty}</Text>
-          </TouchableOpacity>
+      {/* Encabezado */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color="#4E89E8" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Search Here</Text>
+      </View>
+
+      {/* Contenido principal */}
+      <View style={styles.content}>
+        <Text style={styles.title}>Search Your</Text>
+        <Text style={styles.titleBold}>Specialist</Text>
+
+        {/* Campo de selección de área */}
+        <View style={styles.inputContainer}>
+          <Picker
+            selectedValue={area}
+            onValueChange={(value) => setArea(value)}
+            style={styles.input}
+          >
+            <Picker.Item label="Select Area" value="" />
+            <Picker.Item label="Downtown" value="Downtown" />
+            <Picker.Item label="Uptown" value="Uptown" />
+            <Picker.Item label="Suburbs" value="Suburbs" />
+          </Picker>
+          <Ionicons name="location-outline" size={20} color="#4E89E8" />
+        </View>
+
+        {/* Campo de selección de especialidad */}
+        <View style={styles.inputContainer}>
+          <Picker
+            selectedValue={specialty}
+            onValueChange={(value) => setSpecialty(value)}
+            style={styles.input}
+          >
+            <Picker.Item label="Select Specialty" value="" />
+            <Picker.Item label="Cardiologist" value="Cardiologist" />
+            <Picker.Item label="Dermatologist" value="Dermatologist" />
+            <Picker.Item label="Pediatrician" value="Pediatrician" />
+          </Picker>
+          <MaterialCommunityIcons name="stethoscope" size={20} color="#4E89E8" />
+        </View>
+
+        {/* Campo de selección de fecha */}
+        <TouchableOpacity
+          style={styles.inputContainer}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.input}>
+            {date.toDateString() || 'Select Date'}
+          </Text>
+          <Ionicons name="calendar-outline" size={20} color="#4E89E8" />
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
         )}
-      />
+
+        {/* Botón de búsqueda */}
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Imagen inferior */}
+      <View style={styles.footerImage}>
+        <Text>Illustration Placeholder</Text>
+      </View>
     </View>
   );
 }
@@ -47,32 +120,60 @@ export default function SearchSpecialistScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F9FAFC',
     padding: 20,
-    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 10,
+  },
+  content: {
+    flex: 1,
   },
   title: {
+    fontSize: 20,
+    color: '#333',
+  },
+  titleBold: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 20,
   },
-  searchInput: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
     padding: 10,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 5,
     marginBottom: 20,
+    elevation: 3,
   },
-  doctorCard: {
+  input: {
+    flex: 1,
+    marginRight: 10,
+  },
+  searchButton: {
+    backgroundColor: '#4E89E8',
     padding: 15,
-    backgroundColor: '#f9f9f9',
-    marginBottom: 10,
-    borderRadius: 5,
+    borderRadius: 10,
+    alignItems: 'center',
   },
-  doctorName: {
-    fontSize: 18,
+  searchButtonText: {
+    color: '#FFF',
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  doctorSpecialty: {
-    color: '#555',
+  footerImage: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
   },
 });

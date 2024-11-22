@@ -1,40 +1,200 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 
 const AppointmentScreen = () => {
+  const [selectedDate, setSelectedDate] = useState('2024-11-19');
   const [selectedSlot, setSelectedSlot] = useState(null);
 
-  const slots = [
-    { id: '1', time: '10:10 am' },
-    { id: '2', time: '02:20 pm' },
-    { id: '3', time: '07:00 pm' },
+  // Fechas de ejemplo para el calendario
+  const dates = [
+    { day: 'Mon', date: '01' },
+    { day: 'Tue', date: '02' },
+    { day: 'Wed', date: '03' },
+    { day: 'Thu', date: '04' },
+    { day: 'Fri', date: '05' },
+    { day: 'Sat', date: '06' },
+    { day: 'Sun', date: '07' },
   ];
+
+  // Horarios divididos en secciones
+  const slots = {
+    morning: ['10:10 am', '10:30 am', '10:50 am', '11:20 am', '11:40 am'],
+    afternoon: ['02:00 pm', '02:20 pm', '02:40 pm'],
+    evening: ['07:00 pm', '07:20 pm', '07:40 pm', '08:00 pm', '08:20 pm'],
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Select an Appointment Time</Text>
-      <View style={styles.slotsContainer}>
-        {slots.map((slot) => (
+      <Text style={styles.title}>Appointment</Text>
+
+      {/* Selector de fecha */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateSelector}>
+        {dates.map((item, index) => (
           <TouchableOpacity
-            key={slot.id}
-            style={[styles.slot, selectedSlot === slot.id && styles.selectedSlot]}
-            onPress={() => setSelectedSlot(slot.id)}
+            key={index}
+            style={[
+              styles.dateItem,
+              selectedDate === item.date && styles.selectedDateItem,
+            ]}
+            onPress={() => setSelectedDate(item.date)}
           >
-            <Text>{slot.time}</Text>
+            <Text style={styles.dateDay}>{item.day}</Text>
+            <Text style={styles.dateNumber}>{item.date}</Text>
           </TouchableOpacity>
         ))}
-      </View>
-      <Button title="Confirm Appointment" onPress={() => alert('Appointment Confirmed!')} />
+      </ScrollView>
+
+      {/* Slots de tiempo */}
+      <ScrollView style={styles.slotsContainer}>
+        <Text style={styles.slotSectionTitle}>Morning Slots</Text>
+        <View style={styles.slotSection}>
+          {slots.morning.map((time, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.slot,
+                selectedSlot === time && styles.selectedSlot,
+              ]}
+              onPress={() => setSelectedSlot(time)}
+            >
+              <Text style={styles.slotText}>{time}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.slotSectionTitle}>Afternoon Slots</Text>
+        <View style={styles.slotSection}>
+          {slots.afternoon.map((time, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.slot,
+                selectedSlot === time && styles.selectedSlot,
+              ]}
+              onPress={() => setSelectedSlot(time)}
+            >
+              <Text style={styles.slotText}>{time}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.slotSectionTitle}>Evening Slots</Text>
+        <View style={styles.slotSection}>
+          {slots.evening.map((time, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.slot,
+                selectedSlot === time && styles.selectedSlot,
+              ]}
+              onPress={() => setSelectedSlot(time)}
+            >
+              <Text style={styles.slotText}>{time}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
+      {/* Botón de confirmación */}
+      <TouchableOpacity
+        style={styles.confirmButton}
+        onPress={() =>
+          selectedSlot
+            ? alert(`Appointment Confirmed for ${selectedSlot}`)
+            : alert('Please select a time slot')
+        }
+      >
+        <Text style={styles.confirmButtonText}>Confirm Appointment</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 24, marginBottom: 20 },
-  slotsContainer: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 20 },
-  slot: { padding: 10, borderWidth: 1, borderRadius: 5 },
-  selectedSlot: { backgroundColor: 'lightblue' },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFC',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  dateSelector: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  dateItem: {
+    alignItems: 'center',
+    padding: 10,
+    marginHorizontal: 5,
+    backgroundColor: '#E8EAF0',
+    borderRadius: 10,
+  },
+  selectedDateItem: {
+    backgroundColor: '#4E89E8',
+  },
+  dateDay: {
+    fontSize: 14,
+    color: '#555',
+  },
+  dateNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  slotsContainer: {
+    flex: 1,
+  },
+  slotSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    color: '#333',
+  },
+  slotSection: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  slot: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    margin: 5,
+    backgroundColor: '#FFF',
+  },
+  selectedSlot: {
+    backgroundColor: '#4E89E8',
+    borderColor: '#4E89E8',
+  },
+  slotText: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#333',
+  },
+  confirmButton: {
+    backgroundColor: '#4E89E8',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export default AppointmentScreen;
