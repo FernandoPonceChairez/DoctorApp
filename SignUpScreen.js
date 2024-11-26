@@ -38,7 +38,7 @@ export default function SignUpScreen({ navigation }) {
 
         <View style={styles.title2}>
           <Text style={styles.title3}>Already have an account?</Text>
-          <TouchableOpacity  onPress={() => router.push('/SignInScreen')}>
+          <TouchableOpacity  onPress={() => navigation.navigate('SignIn')}>
             <Text style={styles.title4}>Sign In!</Text>
           </TouchableOpacity>
         </View>
@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     justifyContent: 'center',
     marginLeft: 15,
+    marginTop:-60,
   },
   title: {
     fontSize: 24,
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     color: '#000000',
     marginLeft:35,
-    marginTop:20,
+    marginTop:80,
   },
   title4:{
     marginLeft:5,
