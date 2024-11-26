@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Switch,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 export default function SettingsScreen({ navigation }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -19,54 +13,58 @@ export default function SettingsScreen({ navigation }) {
       {/* Encabezado */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color="#4E89E8" />
         </TouchableOpacity>
         <Text style={styles.title}>Settings</Text>
       </View>
 
       {/* Opciones de configuración */}
       <View style={styles.settingsContainer}>
+        {/* Notificaciones */}
         <View style={styles.settingRow}>
-          <Ionicons name="notifications-outline" size={24} color="#8E8E93" />
+          <MaterialIcons name="notifications-active" size={24} color="#FF6347" />
           <Text style={styles.settingLabel}>Notifications</Text>
           <Switch
             value={notificationsEnabled}
             onValueChange={setNotificationsEnabled}
-            thumbColor={notificationsEnabled ? '#4E89E8' : '#f4f3f4'}
-            trackColor={{ false: '#E5E5EA', true: '#4E89E8' }}
+            thumbColor={notificationsEnabled ? '#FF6347' : '#f4f3f4'}
+            trackColor={{ false: '#E5E5EA', true: '#FFDAB9' }}
           />
         </View>
 
+        {/* Opciones de Mensajes */}
         <View style={styles.settingRow}>
-          <Ionicons name="chatbubble-ellipses-outline" size={24} color="#8E8E93" />
+          <Ionicons name="chatbubble-ellipses-outline" size={24} color="#6A5ACD" />
           <Text style={styles.settingLabel}>Message Option</Text>
           <Switch
             value={messageOptionEnabled}
             onValueChange={setMessageOptionEnabled}
-            thumbColor={messageOptionEnabled ? '#4E89E8' : '#f4f3f4'}
-            trackColor={{ false: '#E5E5EA', true: '#4E89E8' }}
+            thumbColor={messageOptionEnabled ? '#6A5ACD' : '#f4f3f4'}
+            trackColor={{ false: '#E5E5EA', true: '#D8BFD8' }}
           />
         </View>
 
+        {/* Opciones de Llamada */}
         <View style={styles.settingRow}>
-          <Ionicons name="call-outline" size={24} color="#8E8E93" />
+          <Ionicons name="call-outline" size={24} color="#32CD32" />
           <Text style={styles.settingLabel}>Call Option</Text>
           <Switch
             value={callOptionEnabled}
             onValueChange={setCallOptionEnabled}
-            thumbColor={callOptionEnabled ? '#4E89E8' : '#f4f3f4'}
-            trackColor={{ false: '#E5E5EA', true: '#4E89E8' }}
+            thumbColor={callOptionEnabled ? '#32CD32' : '#f4f3f4'}
+            trackColor={{ false: '#E5E5EA', true: '#90EE90' }}
           />
         </View>
 
+        {/* Videollamadas */}
         <View style={styles.settingRow}>
-          <Ionicons name="videocam-outline" size={24} color="#8E8E93" />
+          <MaterialIcons name="video-call" size={24} color="#1E90FF" />
           <Text style={styles.settingLabel}>Video Call Option</Text>
           <Switch
             value={videoCallOptionEnabled}
             onValueChange={setVideoCallOptionEnabled}
-            thumbColor={videoCallOptionEnabled ? '#4E89E8' : '#f4f3f4'}
-            trackColor={{ false: '#E5E5EA', true: '#4E89E8' }}
+            thumbColor={videoCallOptionEnabled ? '#1E90FF' : '#f4f3f4'}
+            trackColor={{ false: '#E5E5EA', true: '#87CEFA' }}
           />
         </View>
       </View>
@@ -87,12 +85,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     elevation: 2,
     marginBottom: 20,
+    marginTop: 30,
   },
   title: {
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: 'bold',
-    color: '#333',
-    marginLeft: 10,
+    marginLeft: 120,
   },
   settingsContainer: {
     paddingHorizontal: 20,

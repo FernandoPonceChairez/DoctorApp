@@ -10,26 +10,25 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 const doctors = [
-    { id: '1', name: 'Dr. Serena Gomez', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 5 },
-    { id: '2', name: 'Dr. Farid Raihan', specialty: 'Pediatrician', experience: '7 Years', patients: '3.09K', rating: 5 },
-    { id: '3', name: 'Dr. Kiran Shakia', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 4 },
-    { id: '4', name: 'Dr. Masuda Khan', specialty: 'Pediatrician', experience: '1 Year', patients: '2.10K', rating: 4 },
-    { id: '5', name: 'Dr. Johir Raihan', specialty: 'Pediatrician', experience: '4 Years', patients: '937', rating: 4 },
-    { id: '6', name: 'Dr. Saima Khan', specialty: 'Pediatrician', experience: '2 Years', patients: '569', rating: 3 },
-    { id: '7', name: 'Dr. Depika Khan', specialty: 'Pediatrician', experience: '5 Years', patients: '1.5K', rating: 5 },
-    { id: '8', name: 'Dr. Rahima Khan', specialty: 'Pediatrician', experience: '3 Years', patients: '790', rating: 4 },
-  
-    // Neurosurgeon
-    { id: '9', name: 'Dr. Samuel Adams', specialty: 'Neurosurgeon', experience: '10 Years', patients: '2.5K', rating: 5 },
-    { id: '10', name: 'Dr. Eleanor White', specialty: 'Neurosurgeon', experience: '12 Years', patients: '3.2K', rating: 5 },
-    { id: '11', name: 'Dr. Michael Brown', specialty: 'Neurosurgeon', experience: '9 Years', patients: '1.9K', rating: 4 },
-  
-    // Cardiologist
-    { id: '12', name: 'Dr. Emily Stone', specialty: 'Cardiologist', experience: '15 Years', patients: '4.1K', rating: 5 },
-    { id: '13', name: 'Dr. Chris Evans', specialty: 'Cardiologist', experience: '8 Years', patients: '2.7K', rating: 4 },
-    { id: '14', name: 'Dr. Rachel Green', specialty: 'Cardiologist', experience: '11 Years', patients: '3.5K', rating: 5 },
-  ];
-  
+  { id: '1', name: 'Dr. Serena Gomez', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 5 },
+  { id: '2', name: 'Dr. Farid Raihan', specialty: 'Pediatrician', experience: '7 Years', patients: '3.09K', rating: 5 },
+  { id: '3', name: 'Dr. Kiran Shakia', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 4 },
+  { id: '4', name: 'Dr. Masuda Khan', specialty: 'Pediatrician', experience: '1 Year', patients: '2.10K', rating: 4 },
+  { id: '5', name: 'Dr. Johir Raihan', specialty: 'Pediatrician', experience: '4 Years', patients: '937', rating: 4 },
+  { id: '6', name: 'Dr. Saima Khan', specialty: 'Pediatrician', experience: '2 Years', patients: '569', rating: 3 },
+  { id: '7', name: 'Dr. Depika Khan', specialty: 'Pediatrician', experience: '5 Years', patients: '1.5K', rating: 5 },
+  { id: '8', name: 'Dr. Rahima Khan', specialty: 'Pediatrician', experience: '3 Years', patients: '790', rating: 4 },
+
+  // Neurosurgeon
+  { id: '9', name: 'Dr. Samuel Adams', specialty: 'Neurosurgeon', experience: '10 Years', patients: '2.5K', rating: 5 },
+  { id: '10', name: 'Dr. Eleanor White', specialty: 'Neurosurgeon', experience: '12 Years', patients: '3.2K', rating: 5 },
+  { id: '11', name: 'Dr. Michael Brown', specialty: 'Neurosurgeon', experience: '9 Years', patients: '1.9K', rating: 4 },
+
+  // Cardiologist
+  { id: '12', name: 'Dr. Emily Stone', specialty: 'Cardiologist', experience: '15 Years', patients: '4.1K', rating: 5 },
+  { id: '13', name: 'Dr. Chris Evans', specialty: 'Cardiologist', experience: '8 Years', patients: '2.7K', rating: 4 },
+  { id: '14', name: 'Dr. Rachel Green', specialty: 'Cardiologist', experience: '11 Years', patients: '3.5K', rating: 5 },
+];
 
 export default function DoctorsScreen({ navigation }) {
   const [selectedSpecialty, setSelectedSpecialty] = useState('Pediatrician');
@@ -45,6 +44,20 @@ export default function DoctorsScreen({ navigation }) {
     (doctor) => doctor.specialty === selectedSpecialty
   );
 
+// Asignar imágenes basadas en el género
+const getDoctorImage = (name) => {
+  const femaleDoctors = [
+    'Dr. Serena Gomez', 'Dr. Kiran Shakia', 'Dr. Masuda Khan', 'Dr. Saima Khan', 'Dr. Depika Khan', 'Dr. Rahima Khan', 'Dr. Eleanor White', 'Dr. Emily Stone', 'Dr. Rachel Green'
+  ];
+
+  if (femaleDoctors.includes(name)) {
+    return 'https://via.placeholder.com/100.png?text=Female+Doctor';  // Imágen de doctora
+  } else {
+    return 'https://via.placeholder.com/100.png?text=Male+Doctor';  // Imagen de doctor
+  }
+};
+
+
   return (
     <View style={styles.container}>
       {/* Encabezado */}
@@ -52,7 +65,7 @@ export default function DoctorsScreen({ navigation }) {
         <Text style={styles.title}>Available</Text>
         <Text style={styles.titleBold}>Specialist</Text>
         <View style={styles.iconContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('SearchSpecialist')}>
+          <TouchableOpacity onPress={() => navigation.navigate('SearchSpecialist')}>
             <Ionicons name="search" size={24} color="#4E89E8" />
           </TouchableOpacity>
           <TouchableOpacity style={{ marginLeft: 20 }}>
@@ -95,7 +108,7 @@ export default function DoctorsScreen({ navigation }) {
           >
             <Image
               source={{
-                uri: 'https://via.placeholder.com/100', // Reemplaza con URLs reales si existen
+                uri: getDoctorImage(item.name), // Se asigna la imagen según el nombre
               }}
               style={styles.image}
             />
@@ -126,6 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    marginTop: 30
   },
   title: {
     fontSize: 20,
