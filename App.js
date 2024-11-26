@@ -8,11 +8,11 @@ import SignUpScreen from './SignUpScreen';
 import SignInScreen from './SignInScreen';
 import MainScreen from './MainScreen';
 import DoctorsScreen from './DoctorsScreen';
-import SearchSpecialistScreen from './SearchSpecialistScreen';  // Pantalla de búsqueda de especialistas
-import SearchResultsScreen from './SearchResultsScreen';  // Resultados de búsqueda
-import SpecialistInfoScreen from './SpecialistInfoScreen';  // Información detallada del especialista
-import AppointmentScreen from './AppointmentScreen';  // Pantalla de agendar cita
-import VideoCallScreen from './VideoCallScreen';  // Pantalla de agendar cita
+import SearchSpecialistScreen from './SearchSpecialistScreen';  
+import SearchResultsScreen from './SearchResultsScreen';  
+import SpecialistInfoScreen from './SpecialistInfoScreen';  
+import AppointmentScreen from './AppointmentScreen';  
+import VideoCallScreen from './VideoCallScreen';  
 import NotificationsScreen from './NotificationsScreen';
 import MessagesScreen from './MessagesScreen';
 import ChatScreen from './ChatScreen';
@@ -27,7 +27,10 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={isAuthenticated ? 'Main' : 'Welcome'}>
+      <Stack.Navigator 
+        initialRouteName={isAuthenticated ? 'Main' : 'Welcome'} 
+        screenOptions={{ headerShown: false }} // Oculta el encabezado en todas las pantallas
+      >
         {/* Pantallas de autenticación */}
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="SignUp">
@@ -53,48 +56,14 @@ export default function App() {
 
         {/* Pantalla principal */}
         <Stack.Screen name="Main" component={MainScreen} />
+        <Stack.Screen name="Doctors" component={DoctorsScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Messages" component={MessagesScreen} />
+        <Stack.Screen name="Chat" component={ChatScreen} />
+        <Stack.Screen name="MyAppointment" component={MyAppointmentScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
 
-        <Stack.Screen
-        name="Doctors"
-        component={DoctorsScreen}
-        options={{ title: 'Doctors' }}
-        />
-
-        <Stack.Screen
-          name="Notifications"
-          component={NotificationsScreen}
-          options={{ title: 'Notifications' }}
-        />
-
-        <Stack.Screen
-          name="Messages"
-          component={MessagesScreen}
-          options={{ title: 'Messages' }}
-        />
-
-        <Stack.Screen
-          name="Chat"
-          component={ChatScreen}
-          options={{ title: 'Chat' }}
-        />
-
-        <Stack.Screen
-          name="MyAppointment"
-          component={MyAppointmentScreen}
-          options={{ title: 'Appointments', headerShown: false }} // Título en la barra superior
-        />
-
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ title: 'Profile', headerShown: false }} // Título en la barra superior
-        />
-
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ title: 'Settings', headerShown: false }} // Título en la barra superior
-        />
         {/* Nuevas pantallas */}
         <Stack.Screen name="SearchSpecialist" component={SearchSpecialistScreen} />
         <Stack.Screen name="SearchResults" component={SearchResultsScreen} />
@@ -105,5 +74,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
-/* Set-ExecutionPolicy RemoteSigned -Scope Process */
