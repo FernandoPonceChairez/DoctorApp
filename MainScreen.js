@@ -12,6 +12,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
+
 const categories = [
   { id: '1', name: 'Pediatrician', icon: require('./assets/Pediatrician.png') },
   { id: '2', name: 'Neurosurgeon', icon: require('./assets/Neurosurgeon.png') },
@@ -27,6 +28,8 @@ const doctors = [
     patients: '1.8K',
     image: require('./assets/doc1.png'),
     reviews: '2.05K',
+    proffesion:'Medicine & Heart Spelist',
+    slogan:'Good Healt Clinic',
   },
   {
     name: 'Dr. Asma Khan',
@@ -35,6 +38,8 @@ const doctors = [
     patients: '2.7K',
     image: require('./assets/doc1.png'),
     reviews: '1.5K',
+    proffesion:'Heart & Mind',
+    slogan:'Good Healt Clinic',
   },
 ];
 
@@ -66,15 +71,26 @@ const MainScreen = () => {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Banner promocional */}
-        <View style={styles.banner}>
-          <Text style={styles.bannerText}>Looking For Your Desired Specialist Doctor?</Text>
-          <View style={styles.linegreen}>
-            <Text style={styles.bannerSubText}>Dr. Salina Zaman</Text>
-            <Text style={styles.bannerSubText2}>Medicine & Heart Spelist</Text>
-            <Text style={styles.bannerSubText2}>Good Health Clinic</Text>
-          </View>
-          
-        </View>
+        <FlatList 
+            data={doctors}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.name}
+            contentContainerStyle={{ paddingHorizontal: 0 }} // Espaciado horizontal
+            renderItem={({ item }) => (
+              <View style={styles.banner}>
+                <View>
+                  <Text style={styles.bannerText}>Looking For Your Desired Specialist Doctor?</Text>
+                  <View style={styles.linegreen}>
+                    <Text style={styles.bannerSubText}>{item.name}</Text>
+                    <Text style={styles.bannerSubText2}>{item.proffesion}</Text>
+                    <Text style={styles.bannerSubText2}>{item.slogan}</Text>
+                  </View>
+                </View>
+                  <Image source={item.image} style={styles.doctorImagea} /> 
+              </View>
+            )}
+          />
 
         {/* Categorías */}
         <View style={styles.categoryContainer}>
@@ -108,13 +124,16 @@ const MainScreen = () => {
             contentContainerStyle={{ paddingHorizontal: 0 }} // Espaciado horizontal
             renderItem={({ item }) => (
               <View style={styles.doctorCard}>
-                <Image source={item.image} style={styles.doctorImage} />
+                
                 <View style={styles.infoContainer}>
                   <Text style={styles.doctorName}>{item.name}</Text>
                   <Text style={styles.doctorSpecialty}>{item.specialty}</Text>
-                  <Text style={styles.doctorDetails}>Experience: {item.experience}</Text>
-                  <Text style={styles.doctorDetails}>Patients: {item.patients}</Text>
+                  <Text style={styles.doctorDetails}>Experience: </Text>
+                  <Text style={styles.doctorDetails1}>{item.experience}</Text>
+                  <Text style={styles.doctorDetails}>Patients: </Text>
+                  <Text style={styles.doctorDetails1}>{item.patients}</Text>
                 </View>
+                  <Image source={item.image} style={styles.doctorImage} /> 
               </View>
             )}
           />
@@ -195,7 +214,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFC',
-    padding: 20,
+    padding: 15,
   },
   navBar: {
     flexDirection: 'row',
@@ -217,10 +236,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   banner: {
+    width:276,
+    flexDirection: 'row',
     backgroundColor: '#4E89E8',
     padding: 20,
     borderRadius: 10,
     marginBottom: 20,
+    marginRight:5,
     
   },
   bannerText: {
@@ -251,7 +273,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   categoryCard: {
     alignItems: 'center',
@@ -268,22 +290,34 @@ const styles = StyleSheet.create({
   },
   doctorContainer: {
     marginBottom: 20,
+    marginTop:15,
   },
   doctorCard: {
     flexDirection: 'row',
     backgroundColor: '#FFF',
     padding: 15,
+    paddingRight:0,
     borderRadius: 10,
     marginBottom: 10,
     elevation: 3,
-    marginLeft:5,
+    marginRight:5,
+    width:240,
   },
+  
   doctorImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 15,
+    width: 160,
+    height: 160,
+    resizeMode: 'cover', // Ajusta la imagen al tamaño del contenedor
+    marginLeft:-70,
   },
+  doctorImagea: {
+    width: 160,
+    height: 160,
+    marginLeft:-46,
+    marginBottom:-20,
+  },
+  
+
   infoContainer: {
     flex: 1,
   },
@@ -298,6 +332,12 @@ const styles = StyleSheet.create({
   doctorDetails: {
     color: '#777',
     fontSize: 12,
+    marginTop:20,
+  },
+  doctorDetails1: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight:"bold",
   },
   tabBar: {
     flexDirection: 'row',
