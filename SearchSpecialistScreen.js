@@ -4,6 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Image,
+  ImageBackground
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -122,7 +124,9 @@ export default function SearchSpecialistScreen({ navigation }) {
 
       {/* Imagen inferior */}
       <View style={styles.footerImage}>
-        <Text>Illustration Placeholder</Text>
+      <ImageBackground source={require('./assets/SearchHerePhoto.png')} style={styles.background}>
+        <Text style={{ color: 'transparent', fontSize: 16 }}>Search Here</Text>
+      </ImageBackground>
       </View>
     </View>
   );
@@ -131,24 +135,34 @@ export default function SearchSpecialistScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFC',
-    padding: 20,
+    backgroundColor: '#E6EFF9',
   },
+  
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    marginTop:30,
     backgroundColor:'#ffffff',
+    height:110,
+    width:'100%',
+    padding:20,
+    paddingTop:50,
+  },
+  background: {
+    width: '100%',
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center', 
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    marginLeft: 110,
+    marginLeft: 85,
   },
   content: {
     flex: 1,
+    padding:20,
   },
   title: {
     fontSize: 20,
@@ -168,6 +182,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 20,
     elevation: 3,
+    height:60,
   },
   input: {
     flex: 1,
@@ -178,6 +193,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent:"center",
+    height:60,
   },
   searchButtonText: {
     color: '#FFF',

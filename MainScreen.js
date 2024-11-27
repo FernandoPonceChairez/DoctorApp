@@ -72,6 +72,7 @@ const MainScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Banner promocional */}
         <FlatList 
+            style={styles.flasty}
             data={doctors}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -213,15 +214,18 @@ const MainScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFC',
-    padding: 15,
+    backgroundColor: '#E6EFF9',
   },
   navBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop:30,
+    marginBottom: -45,
+    backgroundColor:'#ffffff',
+    padding:15,
+    height:150,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   navBarTitle: {
     fontSize: 20,
@@ -235,14 +239,17 @@ const styles = StyleSheet.create({
   navBarIcons: {
     flexDirection: 'row',
   },
+  flasty:{
+    padding:15,
+
+  },
   banner: {
     width:276,
     flexDirection: 'row',
     backgroundColor: '#4E89E8',
     padding: 20,
     borderRadius: 10,
-    marginBottom: 20,
-    marginRight:5,
+    marginRight:10,
     
   },
   bannerText: {
@@ -268,7 +275,7 @@ const styles = StyleSheet.create({
 
   },
   categoryContainer: {
-    marginBottom: 20,
+    padding:15,
   },
   sectionTitle: {
     fontSize: 18,
@@ -290,7 +297,7 @@ const styles = StyleSheet.create({
   },
   doctorContainer: {
     marginBottom: 20,
-    marginTop:15,
+    padding:15,
   },
   doctorCard: {
     flexDirection: 'row',
