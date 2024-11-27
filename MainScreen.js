@@ -13,10 +13,10 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const categories = [
-  { id: '1', name: 'Pediatrician', icon: 'ios-heart' },
-  { id: '2', name: 'Neurosurgeon', icon: 'ios-brain' },
-  { id: '3', name: 'Cardiologist', icon: 'ios-heart-circle' },
-  { id: '4', name: 'Psychiatrist', icon: 'ios-happy' },
+  { id: '1', name: 'Pediatrician', icon: require('./assets/Pediatrician.png') },
+  { id: '2', name: 'Neurosurgeon', icon: require('./assets/Neurosurgeon.png') },
+  { id: '3', name: 'Cardiologist', icon: require('./assets/Cardiologist.png') },
+  { id: '4', name: 'Psychiatrist', icon: require('./assets/Psychiatrist.png') },
 ];
 
 const doctors = [
@@ -25,7 +25,7 @@ const doctors = [
     specialty: 'Medicine Specialist',
     experience: '8 Years',
     patients: '1.8K',
-    image: 'https://via.placeholder.com/100',
+    image: require('./assets/doc1.png'),
     reviews: '2.05K',
   },
   {
@@ -33,7 +33,7 @@ const doctors = [
     specialty: 'Medicine Specialist',
     experience: '5 Years',
     patients: '2.7K',
-    image: 'https://via.placeholder.com/100',
+    image: require('./assets/doc1.png'),
     reviews: '1.5K',
   },
 ];
@@ -68,7 +68,12 @@ const MainScreen = () => {
         {/* Banner promocional */}
         <View style={styles.banner}>
           <Text style={styles.bannerText}>Looking For Your Desired Specialist Doctor?</Text>
-          <Text style={styles.bannerSubText}>Dr. Salina Zaman</Text>
+          <View style={styles.linegreen}>
+            <Text style={styles.bannerSubText}>Dr. Salina Zaman</Text>
+            <Text style={styles.bannerSubText2}>Medicine & Heart Spelist</Text>
+            <Text style={styles.bannerSubText2}>Good Health Clinic</Text>
+          </View>
+          
         </View>
 
         {/* Categorías */}
@@ -81,7 +86,11 @@ const MainScreen = () => {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.categoryCard}>
-                <Ionicons name={item.icon} size={30} color="#4E89E8" />
+                <Image 
+                  source={item.icon} 
+                  style={styles.categoryImage} 
+                  resizeMode="contain" 
+                />
                 <Text style={styles.categoryText}>{item.name}</Text>
               </TouchableOpacity>
             )}
@@ -93,10 +102,13 @@ const MainScreen = () => {
           <Text style={styles.sectionTitle}>Available Doctor</Text>
           <FlatList
             data={doctors}
+            horizontal
+            showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.name}
+            contentContainerStyle={{ paddingHorizontal: 0 }} // Espaciado horizontal
             renderItem={({ item }) => (
               <View style={styles.doctorCard}>
-                <Image source={{ uri: item.image }} style={styles.doctorImage} />
+                <Image source={item.image} style={styles.doctorImage} />
                 <View style={styles.infoContainer}>
                   <Text style={styles.doctorName}>{item.name}</Text>
                   <Text style={styles.doctorSpecialty}>{item.specialty}</Text>
@@ -106,6 +118,7 @@ const MainScreen = () => {
               </View>
             )}
           />
+
         </View>
       </ScrollView>
 
@@ -189,6 +202,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    marginTop:30,
   },
   navBarTitle: {
     fontSize: 20,
@@ -216,8 +230,20 @@ const styles = StyleSheet.create({
   },
   bannerSubText: {
     color: '#FFF',
-    fontSize: 14,
+    fontSize: 16,
+  },
+  bannerSubText2: {
+    color: '#FFF',
+    fontSize: 12,
     marginTop: 5,
+  },
+  linegreen:{
+    paddingLeft: 10, // Espaciado interno
+    borderLeftWidth: 5, // Ancho del borde izquierdo
+    borderLeftColor: '#39ff14',
+    marginTop:30,
+    borderRadius:5,
+
   },
   categoryContainer: {
     marginBottom: 20,
@@ -250,6 +276,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
     elevation: 3,
+    marginLeft:5,
   },
   doctorImage: {
     width: 60,
