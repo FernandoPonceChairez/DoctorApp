@@ -36,7 +36,7 @@ const doctors = [
     specialty: 'Medicine Specialist',
     experience: '5 Years',
     patients: '2.7K',
-    image: require('./assets/doc1.png'),
+    image: require('./assets/doc2.png'),
     reviews: '1.5K',
     proffesion:'Heart & Mind',
     slogan:'Good Healt Clinic',
@@ -196,15 +196,15 @@ const MainScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Doctors')}>
           <MaterialCommunityIcons name="stethoscope" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabelInactive}>Doctors</Text>
+          
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
           <Ionicons name="notifications" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabelInactive}>Alerts</Text>
+          
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={toggleMenu}>
           <Ionicons name="grid" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabelInactive}>More</Text>
+          
         </TouchableOpacity>
       </View>
     </View>
@@ -354,12 +354,13 @@ const styles = StyleSheet.create({
     height: 70,
     borderTopWidth: 1,
     borderTopColor: '#ddd',
-    borderRadius: 20,
   },
   tabItem: {
     alignItems: 'center',
+    flexDirection: 'row',
   },
   homeButton: {
+    flexDirection: 'row',
     backgroundColor: '#4E89E8',
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -367,18 +368,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    top: -15,
   },
   tabLabel: {
     color: '#FFF',
     fontSize: 12,
     marginTop: 5,
     fontWeight: 'bold',
+    marginLeft:3,
   },
   tabLabelInactive: {
     color: '#4E89E8',
     fontSize: 12,
     marginTop: 5,
+    marginLeft:3,
   },
   floatingMenu: {
     position: 'absolute',

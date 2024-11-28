@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -36,11 +37,18 @@ const AppointmentScreen = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Appointment</Text>
       </View>
-      <Text style={styles.title2}>August</Text>
+      <View style={styles.augus}>
+        <Text style={styles.title2}>August</Text>
+        <Image 
+        source={require('./assets/flechaabajo.png')} 
+        style={styles.image}
+      />
+      </View>
+      
       
 
       {/* Selector de fecha */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateSelector}>
+      <View style={styles.slotsContainer1}>
         {dates.map((item, index) => (
           <TouchableOpacity
             key={index}
@@ -54,7 +62,8 @@ const AppointmentScreen = () => {
             <Text style={styles.dateNumber}>{item.date}</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
+      
 
       {/* Slots de tiempo */}
       <ScrollView style={styles.slotsContainer}>
@@ -126,6 +135,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E6EFF9',
+    justifyContent:'center',
+    alignItems:'center',
   },
   title: {
     fontSize: 24,
@@ -137,15 +148,24 @@ const styles = StyleSheet.create({
   title2: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginTop:-10,
-    marginBottom:10,
     marginLeft:30,
   },
-  dateSelector: {
+  augus:{
     flexDirection: 'row',
-    marginBottom: 20,
+    backgroundColor:'#EEE',
+    height:35,
+    width:'100%',
+    alignItems:'center',
+    
+
+  },
+  slotsContainer1: {
+    flexDirection: 'row',
     backgroundColor:'#ffffff',
     padding:5,
+    height:80,
+    justifyContent:'center',
+    alignItems:'center',
   },
   dateItem: {
     alignItems: 'center',
@@ -169,6 +189,7 @@ const styles = StyleSheet.create({
   },
   slotsContainer: {
     flex: 1,
+    padding:15,
   },
   slotSectionTitle: {
     fontSize: 18,
@@ -189,6 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 5,
     backgroundColor: '#FFF',
+    width:90
   },
   selectedSlot: {
     backgroundColor: '#4E89E8',
@@ -203,8 +225,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#4E89E8',
     padding: 15,
     borderRadius: 10,
-    marginTop: 20,
     alignItems: 'center',
+    marginBottom:29,
+    width:320,
   },
   confirmButtonText: {
     color: '#FFF',
@@ -214,12 +237,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
     backgroundColor:'#ffffff',
     height:110,
     width:'100%',
     padding:20,
     paddingTop:50,
+    justifyContent:'center',
+  },
+  image: {
+    width: 12, 
+    height: 12, 
+    marginLeft:5,
   },
 });
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -62,8 +63,11 @@ const getDoctorImage = (name) => {
     <View style={styles.container}>
       {/* Encabezado */}
       <View style={styles.header}>
-        <Text style={styles.title}>Available</Text>
+        <View>
+          <Text style={styles.title}>Available</Text>
         <Text style={styles.titleBold}>Specialist</Text>
+        </View>
+        
         <View style={styles.iconContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('SearchSpecialist')}>
             <Ionicons name="search" size={24} color="#4E89E8" />
@@ -75,27 +79,34 @@ const getDoctorImage = (name) => {
       </View>
 
       {/* Categorías */}
-      <View style={styles.categories}>
-        {specialties.map((specialty) => (
-          <TouchableOpacity
-            key={specialty}
-            style={[
-              styles.category,
-              selectedSpecialty === specialty && styles.categorySelected,
-            ]}
-            onPress={() => setSelectedSpecialty(specialty)}
-          >
-            <Text
-              style={[
-                styles.categoryText,
-                selectedSpecialty === specialty && styles.categoryTextSelected,
-              ]}
-            >
-              {specialty}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.scrollContainer}
+        >
+          <View style={styles.categories}>
+            {specialties.map((specialty) => (
+              <TouchableOpacity
+                key={specialty}
+                style={[
+                  styles.category,
+                  selectedSpecialty === specialty && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedSpecialty(specialty)}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedSpecialty === specialty && styles.categoryTextSelected,
+                  ]}
+                >
+                  {specialty}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
 
       {/* Lista de doctores */}
       <FlatList
@@ -106,19 +117,38 @@ const getDoctorImage = (name) => {
             style={styles.card}
             onPress={() => navigation.navigate('SpecialistInfo', { doctor: item })}
           >
-            <Image
+
+            <View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.specialty}>{item.specialty}</Text>
+                  <Image 
+                      source={require('./assets/estrellas.png')} 
+                      style={styles.image2}
+                    />
+                  <Text style={styles.details}>Experience</Text>
+                  <Text style={styles.details2}>{item.experience}</Text>
+                  <Text style={styles.details}>Patients</Text>
+                  <Text style={styles.details2}>{item.patients}</Text>
+                </View>
+
+            </View>
+
+            <View>
+              
+              <Image
               source={{
                 uri: getDoctorImage(item.name), // Se asigna la imagen según el nombre
               }}
               style={styles.image}
             />
-            <View style={styles.infoContainer}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.specialty}>{item.specialty}</Text>
-              <Text style={styles.details}>Experience: {item.experience}</Text>
-              <Text style={styles.details}>Patients: {item.patients}</Text>
+              
             </View>
+
           </TouchableOpacity>
+
+
+              
         )}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -136,7 +166,6 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
     marginTop: 30
@@ -152,11 +181,16 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     flexDirection: 'row',
+    marginLeft:150,
+  },
+  scrollContainer: {
+    paddingHorizontal: 10,
+    height:80,
   },
   categories: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   category: {
     padding: 10,
@@ -182,21 +216,21 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '48%',
+    height:150,
     backgroundColor: '#FFF',
     borderRadius: 10,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 20,
     elevation: 3,
-    alignItems: 'center',
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'space-between'
   },
   image: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginBottom: 10,
+    width: 60,
+    height: '100%',
   },
   infoContainer: {
-    alignItems: 'center',
   },
   name: {
     fontSize: 14,
@@ -211,5 +245,17 @@ const styles = StyleSheet.create({
   details: {
     fontSize: 12,
     color: '#555',
+    marginTop:5,
   },
+  details2: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight:'bold',
+  },
+  image2:{
+    width:50,
+    height:10
+
+  },
+  
 });
