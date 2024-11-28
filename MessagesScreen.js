@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   FlatList,
   StyleSheet,
   TouchableOpacity,
@@ -9,98 +10,115 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const messages = [
+const initialMessages = [
   {
     id: '1',
-    name: 'Dr. Malek Khan',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '23:57',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '2',
-    name: 'Dr. Nurjahan Khan',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '22:51',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '3',
-    name: 'Dr. Raisa Rashid',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '22:32',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '4',
-    name: 'Dr. Salim Polash',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '22:02',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '5',
-    name: 'Dr. Farid Raihan',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '20:32',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '6',
-    name: 'Dr. Istiaka Hasan',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '20:12',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '7',
-    name: 'Dr. Shak Faria Khan',
-    message: 'It is a long established fact that a read and will be distracted lisece.',
-    time: '20:04',
-    image: 'https://via.placeholder.com/50',
+    type: 'received',
+    message: 'Hello Doctor! How are you doing?',
+    time: '12:10',
+    image: 'https://via.placeholder.com/40',
   },
 ];
 
-const MessageItem = ({ item, onPress }) => (
-  <TouchableOpacity style={styles.messageCard} onPress={() => onPress(item)}>
-    <Image source={{ uri: item.image }} style={styles.avatar} />
-    <View style={styles.textContainer}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.message} numberOfLines={1}>
-        {item.message}
-      </Text>
-    </View>
-    <Text style={styles.time}>{item.time}</Text>
-  </TouchableOpacity>
-);
+export default function ChatScreen() {
+  const [messages, setMessages] = useState(initialMessages);
+  const [inputText, setInputText] = useState('');
 
-export default function MessagesScreen({ navigation }) {
-  const handlePress = (item) => {
-    navigation.navigate('Chat', { doctor: item });
+  const handleSend = () => {
+    if (inputText.trim() === '') return;
+
+    const userMessage = {
+      id: Date.now().toString(),
+      type: 'sent',
+      message: inputText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      image: 'https://via.placeholder.com/40',
+    };
+
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setInputText('');
+
+    setTimeout(() => {
+      const doctorMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'received',
+        message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        image: 'https://via.placeholder.com/40',
+      };
+      setMessages((prevMessages) => [...prevMessages, doctorMessage]);
+    }, 1000); // Simula un retraso de 1 segundo
   };
+
+  const renderMessage = ({ item }) => (
+    <View
+      style={[
+        styles.messageContainer,
+        item.type === 'sent' ? styles.sentMessage : styles.receivedMessage,
+      ]}
+    >
+      <Image source={{ uri: item.image }} style={styles.avatar} />
+      <View style={styles.messageContent}>
+        <View
+          style={[
+            styles.messageBubble,
+            item.type === 'sent' ? styles.sentBubble : styles.receivedBubble,
+          ]}
+        >
+          <Text style={styles.messageText}>{item.message}</Text> {/* Asegúrate de que el texto esté en <Text> */}
+        </View>
+        <Text style={styles.messageTime}>{item.time}</Text> {/* Hora dentro de <Text> */}
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      {/* Encabezado */}
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity>
           <Ionicons name="chevron-back" size={24} color="#4E89E8" />
         </TouchableOpacity>
-        <Text style={styles.title}>Message</Text>
-        <TouchableOpacity>
-          <Ionicons name="search" size={24} color="#4E89E8" />
-        </TouchableOpacity>
+        <Text style={styles.title}>Dr. Nurjahan Khan</Text> {/* Título envuelto correctamente */}
+        <View style={{ width: 24 }} /> {/* Espacio para centrar el título */}
       </View>
 
-      {/* Lista de mensajes */}
+      {/* Chat Messages */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <MessageItem item={item} onPress={handlePress} />
-        )}
-        contentContainerStyle={styles.listContainer}
+        renderItem={renderMessage}
+        contentContainerStyle={styles.chatContainer}
       />
+
+      {/* Input Field */}
+      <View style={styles.inputContainer}>
+        <View style={styles.inputRow}>
+          {/* Emoji Icon */}
+          <TouchableOpacity>
+            <Ionicons name="happy-outline" size={24} color="#B0B3C7" style={styles.icon} />
+          </TouchableOpacity>
+
+          {/* Attachment Icon */}
+          <TouchableOpacity>
+            <Ionicons name="attach-outline" size={24} color="#B0B3C7" style={styles.icon} />
+          </TouchableOpacity>
+
+          {/* Text Input */}
+          <TextInput
+            style={styles.textInput}
+            placeholder="Type Your Message"
+            placeholderTextColor="#B0B3C7"
+            value={inputText}
+            onChangeText={setInputText}
+          />
+
+          {/* Send Button */}
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+            <Ionicons name="send" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -108,52 +126,101 @@ export default function MessagesScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFC',
-    padding: 20,
+    backgroundColor: '#FFF', // Fondo blanco
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    padding: 15,
+    backgroundColor: '#FFF', // Fondo blanco sin sombras
+    marginTop: 35, // Baja el encabezado
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+    position: 'absolute',
+    left: '50%',
+    transform: [{ translateX: -50 }],
   },
-  listContainer: {
-    paddingBottom: 20,
+  chatContainer: {
+    flexGrow: 1,
+    padding: 10,
+    backgroundColor: '#F7F7F7', // Fondo gris claro
   },
-  messageCard: {
+  messageContainer: {
+    flexDirection: 'row',
+    marginVertical: 5,
+  },
+  sentMessage: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row-reverse',
+  },
+  receivedMessage: {
+    alignSelf: 'flex-start',
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 8, // Imagen cuadrada
+    marginHorizontal: 5,
+  },
+  messageContent: {
+    maxWidth: '70%',
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    padding: 10,
+    borderRadius: 20,
+    elevation: 1,
+  },
+  sentBubble: {
+    backgroundColor: '#4E89E8',
+  },
+  receivedBubble: {
+    backgroundColor: '#FFF',
+    borderColor: '#DDD',
+    borderWidth: 1,
+  },
+  messageText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  messageTime: {
+    fontSize: 10,
+    color: '#888',
+    marginTop: 5,
+    textAlign: 'left',
+  },
+  inputContainer: {
+    padding: 10,
+    backgroundColor: '#F7F7F7', 
+  },
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    elevation: 2,
+    borderRadius: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    elevation: 5, 
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-  },
-  textContainer: {
+  textInput: {
     flex: 1,
-  },
-  name: {
     fontSize: 16,
-    fontWeight: 'bold',
+    marginHorizontal: 10,
     color: '#333',
   },
-  message: {
-    fontSize: 14,
-    color: '#777',
+  icon: {
+    marginHorizontal: 5,
   },
-  time: {
-    fontSize: 12,
-    color: '#999',
+  sendButton: {
+    backgroundColor: '#4E89E8',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
