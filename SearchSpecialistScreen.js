@@ -36,6 +36,8 @@ export default function SearchSpecialistScreen({ navigation }) {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  
+
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(false); // Ocultar el selector

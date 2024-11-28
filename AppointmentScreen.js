@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const AppointmentScreen = () => {
   const [selectedDate, setSelectedDate] = useState('2024-11-19');
@@ -28,10 +29,15 @@ const AppointmentScreen = () => {
     afternoon: ['02:00 pm', '02:20 pm', '02:40 pm'],
     evening: ['07:00 pm', '07:20 pm', '07:40 pm', '08:00 pm', '08:20 pm'],
   };
+  
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Appointment</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Appointment</Text>
+      </View>
+      <Text style={styles.title2}>August</Text>
+      
 
       {/* Selector de fecha */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateSelector}>
@@ -119,25 +125,35 @@ const AppointmentScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFC',
-    padding: 20,
+    backgroundColor: '#E6EFF9',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
+    marginTop:20,
+    height:'100%',
+  },
+  title2: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop:-10,
+    marginBottom:10,
+    marginLeft:30,
   },
   dateSelector: {
     flexDirection: 'row',
     marginBottom: 20,
+    backgroundColor:'#ffffff',
+    padding:5,
   },
   dateItem: {
     alignItems: 'center',
     padding: 10,
     marginHorizontal: 5,
-    backgroundColor: '#E8EAF0',
+    backgroundColor: '#ffffff',
     borderRadius: 10,
+    height:60,
   },
   selectedDateItem: {
     backgroundColor: '#4E89E8',
@@ -194,6 +210,16 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor:'#ffffff',
+    height:110,
+    width:'100%',
+    padding:20,
+    paddingTop:50,
   },
 });
 

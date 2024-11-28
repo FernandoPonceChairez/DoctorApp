@@ -14,31 +14,51 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
         <Text style={styles.headerTitle} >{doctor.name}</Text>
       </View>
       <Image style={styles.image} source={{ uri: 'https://img.freepik.com/foto-gratis/disparo-aislado-medico-senior-maduro-exitoso-feliz-vistiendo-uniforme-medico-estetoscopio-expresion-facial-alegre-sonriendo-ampliamente-manteniendo-brazos-cruzados-sobre-pecho_343059-2254.jpg?t=st=1732722335~exp=1732725935~hmac=6e64c837bf8d38af1054990d07d8f89dc1794ff8882f93a7d37e7eabeedc9764&w=740' }} />
+      
       <View style={styles.container}>
-        
-        <Text>{doctor.specialty}</Text>
-        <Text>{doctor.clinic}</Text>
-        <Text style={styles.subtitle}>About {doctor.name}</Text>
-        <Text>{doctor.bio || 'This is the bio of the doctor'}</Text>
-        <View style={styles.footer}>
-          <Text>Patients: 1.08K</Text>
-          <Text>Experience: 8 Years</Text>
-          <Text>Reviews: 2.05K</Text>
-      </View>
-      {/* Botones de llamada, videollamada y mensajes */}
+
+        {/* Botones de llamada, videollamada y mensajes */}
       <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="call" size={30} color="#4F8EF7" />
+
+          <TouchableOpacity style={styles.iconButton1}>
+            <Ionicons name="call" size={15} style={styles.iconb} />
+            <Text style={styles.textbut}>Voice Call</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('VideoCall')}>
-            <Ionicons name="videocam" size={30} color="#4F8EF7" />
+          <TouchableOpacity style={styles.iconButton2} onPress={() => navigation.navigate('VideoCall')}>
+            <Ionicons style={styles.iconb} name="videocam" size={15}/>
+            <Text style={styles.textbut}>Video Call</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="chatbubbles" size={30} color="#4F8EF7" />
+          <TouchableOpacity style={styles.iconButton3}>
+            <Ionicons name="chatbubbles" size={15} style={styles.iconb} />
+            <Text style={styles.textbut}>Message</Text>
           </TouchableOpacity>
         </View>
 
-        <Button title="Book an Appointment" onPress={() => navigation.navigate('Appointment')} />
+        <Text style={styles.specia}>{doctor.specialty}</Text>
+        <Text style={styles.cli}> {doctor.clinic}</Text>
+        <Text style={styles.subtitle}>About {doctor.name}</Text>
+        <Text>{doctor.bio ||  'Highly skilled professional with experience in the field. Has participated in various advanced training programs.'}</Text>
+        <View style={styles.footer}>
+
+          <View>
+            <Text style={styles.patien}>Patients</Text>
+            <Text style={styles.patien2}>1.08K</Text>
+          </View>
+          <View>
+            <Text style={styles.patien}>Experience</Text>
+            <Text style={styles.patien2}>9 Years</Text>
+          </View>
+          <View>
+            <Text style={styles.patien}>Reviews</Text>
+            <Text style={styles.patien2}>2.05K</Text>
+          </View>
+          
+      </View>
+
+      <TouchableOpacity style={styles.botonc} onPress={() => navigation.navigate('Appointment')}>
+        <Text style={styles.buttonText}>Book an Appointment</Text>
+      </TouchableOpacity>
+
       </View>
 
       
@@ -76,22 +96,95 @@ const styles = StyleSheet.create({
   },
   subtitle: { 
     fontSize: 18, 
-    marginVertical: 10 
+    fontWeight:'bold',
+    marginVertical: 10,
+    marginTop:20 
+  },
+  patien:{
+    color:'gray'
+
+  },
+  patien2:{
+    fontWeight:'bold',
+    fontSize:25,
+    color:'#1C1C1C'
+  },
+  specia:{
+    fontWeight:'bold',
+    fontSize:20,
+    marginTop:10
+
+  },
+  cli:{
+    fontSize:15,
   },
   footer: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    marginVertical: 20 },
+    marginVertical: 20,
+    marginTop:40,
+  },
   buttonContainer: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     marginVertical: 20 
   },
-  iconButton: {
-    backgroundColor: '#eee',
-    padding: 15,
-    borderRadius: 50,
-    marginHorizontal: 10,
+  iconButton1: {
+    backgroundColor: '#00BFFF',
+    padding: 5,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    width:100,
+    height:40,
+    justifyContent:'center',
+    alignItems:'center',
+    flexDirection: 'row',
+  },
+  iconButton2: {
+    backgroundColor: '#C6AADB',
+    padding: 5,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    width:100,
+    height:40,
+    justifyContent:'center',
+    alignItems:'center',
+    flexDirection: 'row',
+  },
+  iconButton3: {
+    backgroundColor: '#F2C68C',
+    padding: 5,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    width:100,
+    height:40,
+    justifyContent:'center',
+    alignItems:'center',
+    flexDirection: 'row',
+  },
+  textbut:{
+    color:'#ffffff',
+    fontWeight:'bold',
+
+  },
+  iconb:{
+    color:'#ffffff',
+    width:20,
+  },
+  botonc: {
+    width: 325,
+    backgroundColor: '#2582ff',
+    padding: 10,
+    justifyContent:'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    height: 50,
+    marginTop: 30,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
