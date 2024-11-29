@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 const notifications = [
   {
@@ -93,6 +93,26 @@ export default function NotificationsScreen({ navigation }) {
           </>
         )}
       />
+
+      {/* Barra de navegación inferior */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
+          <Ionicons name="home" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabel}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Doctors')}>
+          <FontAwesome5 name="stethoscope" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabel}>Doctors</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]}>
+          <Ionicons name="notifications" size={24} color="#FFF" />
+          <Text style={[styles.tabLabel, styles.tabLabelActive]}>Alerts</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Menu')}>
+          <Ionicons name="grid" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabel}>More</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -108,8 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    marginTop: 30
-
+    marginTop: 30,
   },
   title: {
     fontSize: 24,
@@ -149,5 +168,39 @@ const styles = StyleSheet.create({
   notificationTime: {
     fontSize: 12,
     color: '#999',
+  },
+  // Barra de navegación inferior
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#DDD',
+    position: 'absolute',
+    bottom: 0,
+    left: -20, // Extiende la barra hacia el lado izquierdo
+    right: 0,  // Asegura que llegue hasta el borde derecho
+  },
+  tabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  tabItemActive: {
+    backgroundColor: '#4E89E8',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+  },
+  tabLabel: {
+    fontSize: 12,
+    color: '#777',
+    marginLeft: 8,
+  },
+  tabLabelActive: {
+    color: '#FFF',
+    fontWeight: 'bold',
   },
 });

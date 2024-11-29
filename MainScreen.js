@@ -348,12 +348,16 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
     backgroundColor: '#FFF',
-    height: 70,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: '#DDD',
+    position: 'absolute',
+    bottom: 0,
+    left: -20, // Extiende la barra hacia el lado izquierdo
+    right: 0,  // Asegura que llegue hasta el borde derecho
   },
   tabItem: {
     alignItems: 'center',

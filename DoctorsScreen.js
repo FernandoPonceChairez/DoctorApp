@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ScrollView
+  ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 const doctors = [
   { id: '1', name: 'Dr. Serena Gomez', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 5 },
@@ -34,30 +34,29 @@ const doctors = [
 export default function DoctorsScreen({ navigation }) {
   const [selectedSpecialty, setSelectedSpecialty] = useState('Pediatrician');
 
-  const specialties = [
-    'Pediatrician',
-    'Neurosurgeon',
-    'Cardiologist',
-    'Psychiatrist',
-  ];
+  const specialties = ['Pediatrician', 'Neurosurgeon', 'Cardiologist', 'Psychiatrist'];
 
-  const filteredDoctors = doctors.filter(
-    (doctor) => doctor.specialty === selectedSpecialty
-  );
+  const filteredDoctors = doctors.filter((doctor) => doctor.specialty === selectedSpecialty);
 
-// Asignar imágenes basadas en el género
-const getDoctorImage = (name) => {
-  const femaleDoctors = [
-    'Dr. Serena Gomez', 'Dr. Kiran Shakia', 'Dr. Masuda Khan', 'Dr. Saima Khan', 'Dr. Depika Khan', 'Dr. Rahima Khan', 'Dr. Eleanor White', 'Dr. Emily Stone', 'Dr. Rachel Green'
-  ];
+  const getDoctorImage = (name) => {
+    const femaleDoctors = [
+      'Dr. Serena Gomez',
+      'Dr. Kiran Shakia',
+      'Dr. Masuda Khan',
+      'Dr. Saima Khan',
+      'Dr. Depika Khan',
+      'Dr. Rahima Khan',
+      'Dr. Eleanor White',
+      'Dr. Emily Stone',
+      'Dr. Rachel Green',
+    ];
 
-  if (femaleDoctors.includes(name)) {
-    return 'https://via.placeholder.com/100.png?text=Female+Doctor';  // Imágen de doctora
-  } else {
-    return 'https://via.placeholder.com/100.png?text=Male+Doctor';  // Imagen de doctor
-  }
-};
-
+    if (femaleDoctors.includes(name)) {
+      return 'https://via.placeholder.com/100.png?text=Female+Doctor';
+    } else {
+      return 'https://via.placeholder.com/100.png?text=Male+Doctor';
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -65,9 +64,8 @@ const getDoctorImage = (name) => {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Available</Text>
-        <Text style={styles.titleBold}>Specialist</Text>
+          <Text style={styles.titleBold}>Specialist</Text>
         </View>
-        
         <View style={styles.iconContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('SearchSpecialist')}>
             <Ionicons name="search" size={24} color="#4E89E8" />
@@ -79,34 +77,23 @@ const getDoctorImage = (name) => {
       </View>
 
       {/* Categorías */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          contentContainerStyle={styles.scrollContainer}
-        >
-          <View style={styles.categories}>
-            {specialties.map((specialty) => (
-              <TouchableOpacity
-                key={specialty}
-                style={[
-                  styles.category,
-                  selectedSpecialty === specialty && styles.categorySelected,
-                ]}
-                onPress={() => setSelectedSpecialty(specialty)}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.categories}>
+          {specialties.map((specialty) => (
+            <TouchableOpacity
+              key={specialty}
+              style={[styles.category, selectedSpecialty === specialty && styles.categorySelected]}
+              onPress={() => setSelectedSpecialty(specialty)}
+            >
+              <Text
+                style={[styles.categoryText, selectedSpecialty === specialty && styles.categoryTextSelected]}
               >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    selectedSpecialty === specialty && styles.categoryTextSelected,
-                  ]}
-                >
-                  {specialty}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-
+                {specialty}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
 
       {/* Lista de doctores */}
       <FlatList
@@ -117,145 +104,114 @@ const getDoctorImage = (name) => {
             style={styles.card}
             onPress={() => navigation.navigate('SpecialistInfo', { doctor: item })}
           >
-
             <View>
-                <View style={styles.infoContainer}>
-                  <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.specialty}>{item.specialty}</Text>
-                  <Image 
-                      source={require('./assets/estrellas.png')} 
-                      style={styles.image2}
-                    />
-                  <Text style={styles.details}>Experience</Text>
-                  <Text style={styles.details2}>{item.experience}</Text>
-                  <Text style={styles.details}>Patients</Text>
-                  <Text style={styles.details2}>{item.patients}</Text>
-                </View>
-
+              <View style={styles.infoContainer}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.specialty}>{item.specialty}</Text>
+                <Image source={require('./assets/estrellas.png')} style={styles.image2} />
+                <Text style={styles.details}>Experience</Text>
+                <Text style={styles.details2}>{item.experience}</Text>
+                <Text style={styles.details}>Patients</Text>
+                <Text style={styles.details2}>{item.patients}</Text>
+              </View>
             </View>
-
             <View>
-              
               <Image
-              source={{
-                uri: getDoctorImage(item.name), // Se asigna la imagen según el nombre
-              }}
-              style={styles.image}
-            />
-              
+                source={{
+                  uri: getDoctorImage(item.name),
+                }}
+                style={styles.image}
+              />
             </View>
-
           </TouchableOpacity>
-
-
-              
         )}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContainer}
       />
+
+      {/* Barra de navegación inferior */}
+      <View style={styles.tabBar}>
+  <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
+    <Ionicons name="home" size={24} color="#4E89E8" />
+    <Text style={styles.tabLabel}>Home</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]}>
+    <Ionicons name="stethoscope" size={24} color="#FFF" />
+    <Text style={[styles.tabLabel, styles.tabLabelActive]}>Doctors</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
+    <Ionicons name="notifications" size={24} color="#4E89E8" />
+    <Text style={styles.tabLabel}>Alerts</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Menu')}>
+    <Ionicons name="grid" size={24} color="#4E89E8" />
+    <Text style={styles.tabLabel}>More</Text>
+  </TouchableOpacity>
+</View>
+
+
     </View>
   );
 }
 
+// Barra de navegación inferior ajustada
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFC',
-    padding: 20,
+  container: { flex: 1, backgroundColor: '#F9FAFC', padding: 20 },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, marginTop: 30 },
+  title: { fontSize: 20, color: '#333' },
+  titleBold: { fontSize: 24, fontWeight: 'bold', color: '#333' },
+  iconContainer: { flexDirection: 'row', marginLeft: 150 },
+  scrollContainer: { paddingHorizontal: 10, height: 80 },
+  categories: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 40 },
+  category: { padding: 10, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  categorySelected: { borderBottomColor: '#4E89E8' },
+  categoryText: { fontSize: 16, color: '#777' },
+  categoryTextSelected: { color: '#4E89E8', fontWeight: 'bold' },
+  listContainer: { paddingBottom: 20 },
+  row: { justifyContent: 'space-between' },
+  card: { width: '48%', height: 150, backgroundColor: '#FFF', borderRadius: 10, padding: 15, marginBottom: 20, elevation: 3, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  image: { width: 60, height: '100%' },
+  infoContainer: {},
+  name: { fontSize: 14, fontWeight: 'bold', color: '#333', textAlign: 'center' },
+  specialty: { fontSize: 12, color: '#777' },
+  details: { fontSize: 12, color: '#555', marginTop: 5 },
+  details2: { fontSize: 14, color: '#000', fontWeight: 'bold' },
+  image2: { width: 50, height: 10 },
+
+  // Estilos de la barra de navegación inferior ajustada
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#DDD',
+    position: 'absolute',
+    bottom: 0,
+    left: -20,
+    right: 0,
+    width: '110%',
   },
-  header: {
+  tabItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 30
-  },
-  title: {
-    fontSize: 20,
-    color: '#333',
-  },
-  titleBold: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    marginLeft:150,
-  },
-  scrollContainer: {
     paddingHorizontal: 10,
-    height:80,
   },
-  categories: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 40,
+  tabItemActive: {
+    backgroundColor: '#4E89E8',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
   },
-  category: {
-    padding: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  categorySelected: {
-    borderBottomColor: '#4E89E8',
-  },
-  categoryText: {
-    fontSize: 16,
-    color: '#777',
-  },
-  categoryTextSelected: {
-    color: '#4E89E8',
-    fontWeight: 'bold',
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  row: {
-    justifyContent: 'space-between',
-  },
-  card: {
-    width: '48%',
-    height:150,
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    elevation: 3,
-    flexDirection:'row',
-    alignItems:'center',
-    justifyContent:'space-between'
-  },
-  image: {
-    width: 60,
-    height: '100%',
-  },
-  infoContainer: {
-  },
-  name: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-  },
-  specialty: {
+  tabLabel: {
     fontSize: 12,
     color: '#777',
+    marginLeft: 8,
   },
-  details: {
-    fontSize: 12,
-    color: '#555',
-    marginTop:5,
+  tabLabelActive: {
+    color: '#FFF',
+    fontWeight: 'bold',
   },
-  details2: {
-    fontSize: 14,
-    color: '#000',
-    fontWeight:'bold',
-  },
-  image2:{
-    width:50,
-    height:10
-
-  },
-  
 });
