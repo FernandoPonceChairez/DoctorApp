@@ -171,10 +171,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    marginTop:30
   },
   dateSelector: {
     flexDirection: 'row',
     marginBottom: 20,
+    height:1,
+    
   },
   dateItem: {
     alignItems: 'center',

@@ -160,6 +160,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    marginTop:40
   },
   headerTitle: {
     fontSize: 18,

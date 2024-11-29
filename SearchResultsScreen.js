@@ -48,7 +48,7 @@ export default function SearchResultsScreen({ route, navigation }) {
       <FlatList
         ListHeaderComponent={() => (
           <>
-            <Text style={styles.sectionTitle}>Doctors Available</Text>
+            <Text style={styles.sectionTitle}>All Doctor</Text>
           </>
         )}
         data={doctors}
@@ -68,7 +68,17 @@ export default function SearchResultsScreen({ route, navigation }) {
               style={styles.image}
             />
             <View style={styles.infoContainer}>
-              <Text style={styles.name}>{item.name}</Text>
+
+
+              <View style={styles.infoContainer1}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Image
+                  source={require('./assets/estrellas.png')}
+                  style={styles.image1}
+                />
+                
+              </View>
+              
               <Text style={styles.specialty}>{item.specialty} (MBBS, FCPS)</Text>
               <Text style={styles.timing}>Available: {item.available_hours}</Text>
               <Text style={styles.clinic}>{item.clinic}</Text>
@@ -77,21 +87,31 @@ export default function SearchResultsScreen({ route, navigation }) {
         )}
         ListFooterComponent={() => (
           <>
-            <Text style={styles.sectionTitle}>More Available Doctors</Text>
+            <Text style={styles.sectionTitle}>Available Doctor</Text>
             <View style={styles.additionalDoctors}>
               {doctors.map((doctor) => (
+
                 <View key={doctor.id} style={styles.additionalCard}>
+
+                  <View>
+                    <Text style={styles.additionalName}>{doctor.name}</Text>
+                    <Image
+                      source={require('./assets/estrellas.png')}
+                      style={styles.image1}
+                    />
+                    <Text style={styles.additionalDetails}>Experience</Text>
+                    <Text style={styles.additionalDetails1}>{doctor.experience_years} Years</Text>
+                    <Text style={styles.additionalDetails}>Patients</Text>
+                    <Text style={styles.additionalDetails1}>{doctor.patient_count}</Text>
+                  </View>
+
                   <Image
                     source={{
                       uri: doctor.image_url || 'https://via.placeholder.com/100',
                     }}
                     style={styles.additionalImage}
                   />
-                  <Text style={styles.additionalName}>{doctor.name}</Text>
-                  <Text style={styles.additionalDetails}>
-                    Experience: {doctor.experience_years} Years
-                  </Text>
-                  <Text style={styles.additionalDetails}>Patients: {doctor.patient_count}</Text>
+
                 </View>
               ))}
             </View>
@@ -112,7 +132,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop:35,
   },
   headerTitle: {
     fontSize: 20,
@@ -137,22 +158,35 @@ const styles = StyleSheet.create({
   image: {
     width: 60,
     height: 60,
-    borderRadius: 30,
+    borderRadius: 5,
     marginRight: 15,
+  },
+  image1:{
+    width:70,
+    height:10,
+
   },
   infoContainer: {
     flex: 1,
+  },
+  infoContainer1:{
+    flexDirection:'row',
+    alignItems:'center',
+
   },
   name: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    marginRight:3
   },
   specialty: {
+    marginTop:5,
     fontSize: 14,
     color: '#555',
   },
   timing: {
+    marginTop:5,
     fontSize: 12,
     color: '#777',
   },
@@ -166,29 +200,38 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   additionalCard: {
-    width: '48%',
+    width:150,
+    height:150,
     backgroundColor: '#FFF',
     borderRadius: 10,
     padding: 10,
     alignItems: 'center',
     marginBottom: 10,
     elevation: 3,
+    flexDirection:'row',
   },
   additionalImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginBottom: 10,
+    width: 60,
+    height: 80,
+    marginTop:80,
+    marginLeft:80,
+    position:'absolute'
+
   },
   additionalName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    textAlign: 'center',
+    marginBottom:3
   },
   additionalDetails: {
     fontSize: 12,
     color: '#777',
-    textAlign: 'center',
+    marginTop:10,
+  },
+  additionalDetails1: {
+    fontSize: 15,
+    color: '#000',
+    fontWeight:'bold'
   },
 });

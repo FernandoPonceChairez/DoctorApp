@@ -95,9 +95,11 @@ export default function DoctorsScreen({ navigation }) {
         </View>
       </ScrollView>
 
+
       {/* Lista de doctores */}
       <FlatList
         data={doctors}
+        style={styles.card2}
         keyExtractor={(item) => item.id.toString()} // Aseguramos que el ID sea único
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -219,8 +221,10 @@ const styles = StyleSheet.create({
   categoryTextSelected: { color: '#4E89E8', fontWeight: 'bold' },
   listContainer: { paddingBottom: 20 },
   row: { justifyContent: 'space-between' },
-  card: { width: '48%', height: 150, backgroundColor: '#FFF', borderRadius: 10, padding: 15, marginBottom: 20, elevation: 3, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  image: { width: 60, height: '100%' },
+  card: { width: 150, height: 150, backgroundColor: '#FFF', borderRadius: 10, padding: 15, marginBottom: 20, marginRight:4, elevation: 3, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  card2: { width: '100%', height: 100,borderRadius: 10, padding: 15, marginBottom: 20, flexDirection: 'row', marginTop:-500 },
+
+  image: { width: 60, height: 100,position:'absolute', marginLeft:-55, marginTop:-25},
   infoContainer: {},
   name: { fontSize: 14, fontWeight: 'bold', color: '#333', textAlign: 'center' },
   specialty: { fontSize: 12, color: '#777' },
@@ -241,11 +245,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: -20,
     right: 0,
-    width: '110%',
+    width: '120%',
   },
   tabItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignContent:'center',
+    justifyContent:'center',
     paddingHorizontal: 10,
   },
   tabItemActive: {
@@ -260,9 +266,15 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginLeft:3,
   },
+  tabLabel:{
+    color:'#4E89E8',
+    marginLeft:3,
+
+  },
   tabLabelActive: {
     color: '#FFF',
     fontWeight: 'bold',
+    marginLeft:3,
   },floatingMenu: {
     position: 'absolute',
     bottom: 90,

@@ -153,19 +153,19 @@ export default function NotificationsScreen({ navigation }) {
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Main')}>
           <Ionicons name="home" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabel}>Home</Text>
+          <Text style={styles.tabLabel1}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]}>
-          <Ionicons name="stethoscope" size={24} color="#FFF" />
+        <TouchableOpacity style={styles.tabItem}>
+          <Ionicons name="stethoscope" size={24} color="#4E89E8" />
           <Text style={[styles.tabLabel, styles.tabLabelActive]}>Doctors</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
-          <Ionicons name="notifications" size={24} color="#4E89E8" />
+        <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]} onPress={() => navigation.navigate('Notifications')}>
+          <Ionicons name="notifications" size={24} color="#fff" />
           <Text style={styles.tabLabel}>Alerts</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={toggleMenu}>
           <Ionicons name="grid" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabelInactive}>More</Text>
+          <Text style={styles.tabLabel1}>More</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
     right: 0,  // Asegura que llegue hasta el borde derecho
   },
   tabItem: {
+    
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
@@ -251,11 +252,16 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 12,
-    color: '#777',
+    color: '#fff',
+    marginLeft: 8,
+  },
+  tabLabel1: {
+    fontSize: 12,
+    color: '#4E89E8',
     marginLeft: 8,
   },
   tabLabelActive: {
-    color: '#FFF',
+    color: '#4E89E8',
     fontWeight: 'bold',
   },
   floatingMenu: {

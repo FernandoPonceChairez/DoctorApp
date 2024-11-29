@@ -55,6 +55,8 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
   }
 
   return (
+    
+    
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -118,7 +120,6 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 15,
   },
   image: {
     width: '100%',
@@ -132,6 +133,10 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 20,
     paddingTop: 50,
+  },
+  infoContainer:{
+    padding:20
+
   },
   headerTitle: {
     fontSize: 20,
