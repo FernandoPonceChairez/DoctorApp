@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,31 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import api from './api'; // Asegúrate de que este archivo esté configurado para conectar a tu API
 
 export default function SearchResultsScreen({ route, navigation }) {
-  const { results = [] } = route.params; // Obtiene los resultados filtrados de la búsqueda
+  const { specialty, area, date } = route.params; // Recibimos los parámetros
+
+  const [doctors, setDoctors] = useState([]);
+
+  // Realizar la consulta a la API con los filtros
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const query = {};
+        if (specialty) query.specialty = specialty;
+        if (area) query.area = area;
+        if (date) query.date = date;
+
+        const response = await api.get('/doctors', { params: query });
+        setDoctors(response.data);
+      } catch (error) {
+        console.error('Error al obtener doctores:', error);
+      }
+    };
+
+    fetchDoctors();
+  }, [specialty, area, date]);
 
   return (
     <View style={styles.container}>
@@ -26,99 +48,53 @@ export default function SearchResultsScreen({ route, navigation }) {
       <FlatList
         ListHeaderComponent={() => (
           <>
-            <Text style={styles.sectionTitle}>All Cardiologists</Text>
+            <Text style={styles.sectionTitle}>Doctors Available</Text>
           </>
         )}
-        data={results}
-        keyExtractor={(item) => item.id}
+        data={doctors}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('SpecialistInfo', { doctor: item })} // Redirige a SpecialistInfoScreen
+            onPress={() => {
+              console.log('Doctor ID:', item.id); // Verifica que el ID se pase correctamente
+              navigation.navigate('SpecialistInfo', { doctorId: item.id });
+            }}
           >
-            <View style={styles.imagef}>
-             <Image
-              source={require('./assets/doc1.png')} 
+            <Image
+              source={{
+                uri: item.image_url || 'https://via.placeholder.com/100',
+              }}
               style={styles.image}
-            /> 
-            </View>
-            
+            />
             <View style={styles.infoContainer}>
-              <View style={styles.namestar}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Image 
-                    source={require('./assets/estrellas.png')} 
-                    style={styles.image3}
-                  />
-                  <Image 
-                    source={require('./assets/puntos.png')} 
-                    style={styles.image4}
-                  />
-              </View>
-              
-              
+              <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.specialty}>{item.specialty} (MBBS, FCPS)</Text>
-
-              <View style={styles.namestar2}>
-                  <Image 
-                    source={require('./assets/reloj.png')} 
-                    style={styles.image5}
-                  />
-                <Text style={styles.timing}>12.00pm - 4.00pm</Text>
-                <Image 
-                    source={require('./assets/location.png')} 
-                    style={styles.image5}
-                  />
-                <Text style={styles.clinic}>{item.clinic}</Text>
-              </View>
-              
+              <Text style={styles.timing}>Available: {item.available_hours}</Text>
+              <Text style={styles.clinic}>{item.clinic}</Text>
             </View>
           </TouchableOpacity>
         )}
-        
-        
         ListFooterComponent={() => (
           <>
-            <Text style={styles.sectionTitle}>Available Doctors</Text>
-            
-            <FlatList
-                data={results}
-                horizontal
-                keyExtractor={(doctor) => doctor.id.toString()}
-                renderItem={({ item: doctor }) => (
-                  <View style={styles.additionalCard}>
-                    
-                    <View>
-                      <Text style={styles.additionalName}>{doctor.name}</Text>
-                    <Image 
-                      source={require('./assets/estrellas.png')} 
-                      style={styles.image2}
-                    />
-                    <View>
-                      <Text style={styles.additionalDetails}>Experience</Text>
-                      <Text style={styles.additionalDetails2}>8 Years</Text>
-                    </View>
-                    
-                    <View>
-                      <Text style={styles.additionalDetails}>Patients</Text>
-                      <Text style={styles.additionalDetails2}>1.08K</Text>
-                    </View>
-
-                    </View>
-                    
-
-                    <View>
-                    <Image
-                      source={require('./assets/doc1.png')} 
-                      style={styles.imageabajo}
-                    /> 
-                    </View>
-
-                  </View>
-                )}
-                contentContainerStyle={styles.additionalDoctors}
-                showsHorizontalScrollIndicator={false}
-              />
+            <Text style={styles.sectionTitle}>More Available Doctors</Text>
+            <View style={styles.additionalDoctors}>
+              {doctors.map((doctor) => (
+                <View key={doctor.id} style={styles.additionalCard}>
+                  <Image
+                    source={{
+                      uri: doctor.image_url || 'https://via.placeholder.com/100',
+                    }}
+                    style={styles.additionalImage}
+                  />
+                  <Text style={styles.additionalName}>{doctor.name}</Text>
+                  <Text style={styles.additionalDetails}>
+                    Experience: {doctor.experience_years} Years
+                  </Text>
+                  <Text style={styles.additionalDetails}>Patients: {doctor.patient_count}</Text>
+                </View>
+              ))}
+            </View>
           </>
         )}
       />
@@ -131,7 +107,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFC',
     padding: 20,
-    paddingTop:55,
   },
   header: {
     flexDirection: 'row',
@@ -160,62 +135,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   image: {
-    width: 80,
-    height: 80,
-    position:'absolute',
-    top:-10,
-    left:-1
-    
-  },
-
-  imageabajo: {
-    width: 130,
-    height: 150,
-    position:'absolute',
-    marginLeft:-40,
-    
-  },
-  imagef:{
-    borderRadius: 5,
-    backgroundColor:'#FFA07A',
-    width:70,
-    height:70,
-    alignItems:'center',
-    
-
-  },
-  image2:{
-    width:90,
-    height:15
-
-  },
-  image3:{
-    width:70,
-    height:10,
-    marginLeft:10,
-  },
-  image4:{
-    width:12,
-    height:12,
-    marginLeft:205,
-    position:'absolute'
-  },
-  image5:{
-    width:12,
-    height:12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 15,
   },
   infoContainer: {
     flex: 1,
-    marginLeft:10
-  },
-  namestar:{
-    flexDirection:'row',
-    alignItems:'center',
-  },
-  namestar2:{
-    flexDirection:'row',
-    alignItems:'center',
-    
   },
   name: {
     fontSize: 16,
@@ -225,19 +151,14 @@ const styles = StyleSheet.create({
   specialty: {
     fontSize: 14,
     color: '#555',
-    marginTop:5,
-    marginBottom:5
   },
   timing: {
     fontSize: 12,
     color: '#777',
-    marginLeft:2,
-    marginRight:2
   },
   clinic: {
     fontSize: 12,
     color: '#999',
-    marginLeft:5
   },
   additionalDoctors: {
     flexDirection: 'row',
@@ -245,14 +166,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   additionalCard: {
-    backgroundColor: '#ffffff',
-    padding: 10,
+    width: '48%',
+    backgroundColor: '#FFF',
     borderRadius: 10,
-    marginHorizontal: 5,
-    paddingVertical:20,
-    flexDirection:'row',
-    height:200,
-    width:200
+    padding: 10,
+    alignItems: 'center',
+    marginBottom: 10,
+    elevation: 3,
   },
   additionalImage: {
     width: 50,
@@ -261,7 +181,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   additionalName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
@@ -269,10 +189,6 @@ const styles = StyleSheet.create({
   additionalDetails: {
     fontSize: 12,
     color: '#777',
-    marginTop:20,
-  },
-  additionalDetails2: {
-    fontWeight:'bold',
-    fontSize: 16,
+    textAlign: 'center',
   },
 });

@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Para seleccionar la fecha y hora
+import api from './api'; // Asegúrate de que este archivo esté configurado para conectar a tu API
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Usamos AsyncStorage para recuperar el user_id
 
-const AppointmentScreen = () => {
-  const [selectedDate, setSelectedDate] = useState('2024-11-19');
-  const [selectedSlot, setSelectedSlot] = useState(null);
+const AppointmentScreen = ({ route, navigation }) => {
+  const { doctor } = route.params || {}; // Asegúrate de que doctor no sea undefined
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Para guardar la fecha seleccionada (inicializada como Date)
+  const [selectedSlot, setSelectedSlot] = useState(null); // Para guardar el slot de la cita seleccionado
+  const [showDatePicker, setShowDatePicker] = useState(false); // Para mostrar el DateTimePicker
 
   // Fechas de ejemplo para el calendario
   const dates = [
@@ -30,40 +27,85 @@ const AppointmentScreen = () => {
     afternoon: ['02:00 pm', '02:20 pm', '02:40 pm'],
     evening: ['07:00 pm', '07:20 pm', '07:40 pm', '08:00 pm', '08:20 pm'],
   };
-  
+
+  // Estado para el usuario
+  const [user, setUser] = useState(null); // Para almacenar la información del usuario
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId'); // Recuperar ID del usuario desde el almacenamiento
+        if (!userId) {
+          Alert.alert('Error', 'No se encontró información del usuario.');
+          navigation.reset({ index: 0, routes: [{ name: 'SignIn' }] }); // Redirigir al inicio de sesión
+          return;
+        }
+        const response = await api.get(`/users/${userId}`); // Obtener datos del usuario
+        setUser(response.data); // Actualizar el estado con los datos del usuario
+      } catch (error) {
+        console.error('Error al cargar los datos del usuario:', error);
+        Alert.alert('Error', 'No se pudieron cargar los datos del usuario.');
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || new Date(); // Esto asegura que siempre sea un objeto Date.
+    setShowDatePicker(false);
+    setSelectedDate(currentDate); // Actualiza la fecha seleccionada como objeto Date
+  };
+
+  const handleConfirmAppointment = async () => {
+    if (!user) {
+      Alert.alert('Error', 'No se pudo obtener la información del usuario');
+      return;
+    }
+
+    // Verificar que se haya seleccionado un slot y una fecha
+    if (!selectedSlot) {
+      Alert.alert('Error', 'Por favor selecciona un horario');
+      return;
+    }
+
+    // Enviar la cita a la API
+    try {
+      const response = await api.post('/appointments', {
+        user_id: user.id,
+        doctor_id: doctor.id,
+        date: selectedDate.toISOString(), // Convertir la fecha seleccionada a formato ISO
+        time_slot: selectedSlot, // Hora seleccionada
+        status: 'Upcoming',
+      });
+
+      if (response.status === 201) {
+        Alert.alert('Cita Agendada', 'Tu cita ha sido agendada correctamente.');
+        navigation.goBack(); // Volver a la pantalla anterior o a la lista de citas
+      }
+    } catch (error) {
+      console.error("Error al agendar la cita:", error);
+      Alert.alert('Error', 'Hubo un problema al agendar la cita');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Appointment</Text>
-      </View>
-      <View style={styles.augus}>
-        <Text style={styles.title2}>August</Text>
-        <Image 
-        source={require('./assets/flechaabajo.png')} 
-        style={styles.image}
-      />
-      </View>
-      
-      
+      <Text style={styles.title}>Appointment</Text>
 
       {/* Selector de fecha */}
-      <View style={styles.slotsContainer1}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateSelector}>
         {dates.map((item, index) => (
           <TouchableOpacity
             key={index}
-            style={[
-              styles.dateItem,
-              selectedDate === item.date && styles.selectedDateItem,
-            ]}
-            onPress={() => setSelectedDate(item.date)}
+            style={[styles.dateItem, selectedDate.toDateString().slice(4, 10) === `${item.day} ${item.date}` && styles.selectedDateItem]}
+            onPress={() => setSelectedDate(new Date(`2024-${item.date}`))} // Actualiza la fecha seleccionada con el nuevo valor
           >
             <Text style={styles.dateDay}>{item.day}</Text>
             <Text style={styles.dateNumber}>{item.date}</Text>
           </TouchableOpacity>
         ))}
-      </View>
-      
+      </ScrollView>
 
       {/* Slots de tiempo */}
       <ScrollView style={styles.slotsContainer}>
@@ -72,10 +114,7 @@ const AppointmentScreen = () => {
           {slots.morning.map((time, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.slot,
-                selectedSlot === time && styles.selectedSlot,
-              ]}
+              style={[styles.slot, selectedSlot === time && styles.selectedSlot]}
               onPress={() => setSelectedSlot(time)}
             >
               <Text style={styles.slotText}>{time}</Text>
@@ -88,10 +127,7 @@ const AppointmentScreen = () => {
           {slots.afternoon.map((time, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.slot,
-                selectedSlot === time && styles.selectedSlot,
-              ]}
+              style={[styles.slot, selectedSlot === time && styles.selectedSlot]}
               onPress={() => setSelectedSlot(time)}
             >
               <Text style={styles.slotText}>{time}</Text>
@@ -104,10 +140,7 @@ const AppointmentScreen = () => {
           {slots.evening.map((time, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.slot,
-                selectedSlot === time && styles.selectedSlot,
-              ]}
+              style={[styles.slot, selectedSlot === time && styles.selectedSlot]}
               onPress={() => setSelectedSlot(time)}
             >
               <Text style={styles.slotText}>{time}</Text>
@@ -119,11 +152,7 @@ const AppointmentScreen = () => {
       {/* Botón de confirmación */}
       <TouchableOpacity
         style={styles.confirmButton}
-        onPress={() =>
-          selectedSlot
-            ? alert(`Appointment Confirmed for ${selectedSlot}`)
-            : alert('Please select a time slot')
-        }
+        onPress={handleConfirmAppointment}
       >
         <Text style={styles.confirmButtonText}>Confirm Appointment</Text>
       </TouchableOpacity>
@@ -134,46 +163,25 @@ const AppointmentScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E6EFF9',
-    justifyContent:'center',
-    alignItems:'center',
+    backgroundColor: '#F9FAFC',
+    padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 20,
     textAlign: 'center',
-    marginTop:20,
-    height:'100%',
   },
-  title2: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft:30,
-  },
-  augus:{
+  dateSelector: {
     flexDirection: 'row',
-    backgroundColor:'#EEE',
-    height:35,
-    width:'100%',
-    alignItems:'center',
-    
-
-  },
-  slotsContainer1: {
-    flexDirection: 'row',
-    backgroundColor:'#ffffff',
-    padding:5,
-    height:80,
-    justifyContent:'center',
-    alignItems:'center',
+    marginBottom: 20,
   },
   dateItem: {
     alignItems: 'center',
     padding: 10,
     marginHorizontal: 5,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#E8EAF0',
     borderRadius: 10,
-    height:60,
   },
   selectedDateItem: {
     backgroundColor: '#4E89E8',
@@ -189,7 +197,6 @@ const styles = StyleSheet.create({
   },
   slotsContainer: {
     flex: 1,
-    padding:15,
   },
   slotSectionTitle: {
     fontSize: 18,
@@ -210,7 +217,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 5,
     backgroundColor: '#FFF',
-    width:90
   },
   selectedSlot: {
     backgroundColor: '#4E89E8',
@@ -225,29 +231,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#4E89E8',
     padding: 15,
     borderRadius: 10,
+    marginTop: 20,
     alignItems: 'center',
-    marginBottom:29,
-    width:320,
   },
   confirmButtonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor:'#ffffff',
-    height:110,
-    width:'100%',
-    padding:20,
-    paddingTop:50,
-    justifyContent:'center',
-  },
-  image: {
-    width: 12, 
-    height: 12, 
-    marginLeft:5,
   },
 });
 

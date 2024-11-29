@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Alert, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from './api';
 
 export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -8,67 +9,53 @@ export default function SignInScreen({ navigation }) {
 
   const handleSignIn = async () => {
     try {
-      // Obtener el usuario almacenado en AsyncStorage
-      const storedUser = await AsyncStorage.getItem('user');
-      const user = JSON.parse(storedUser);
-
-      // Verificar si las credenciales coinciden
-      if (user && user.email === email && user.password === password) {
-        Alert.alert('Success', 'Logged in successfully');
-        navigation.navigate('Main'); // Navegar a la pantalla principal
-      } else {
-        Alert.alert('Error', 'Invalid credentials');
-      }
+      const response = await api.post('/users/login', { email, password });
+      const { id } = response.data.user; // Asegúrate de que el backend devuelve el ID del usuario
+      await AsyncStorage.setItem('userId', id.toString()); // Guarda el `userId`
+      Alert.alert('Success', 'Logged in successfully');
+      navigation.navigate('Main'); // Navegar a la pantalla principal
     } catch (error) {
-      console.error('Error reading user', error);
+      console.error('Error during login:', error.response?.data || error.message);
+      Alert.alert('Error', error.response?.data?.message || 'Invalid credentials');
     }
   };
 
   return (
     <ImageBackground
-    source={require('./assets/Back2.png')} 
+      source={require('./assets/Back2.png')} 
       style={styles.background}
       resizeMode="cover"
     >
-
-    
-    <Text style={styles.title}>Sign In</Text>
-
+      <Text style={styles.title}>Sign In</Text>
       <View style={styles.title2}>
-          <Text style={styles.title3}>Don't have an account?</Text>
-          <TouchableOpacity  onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.title4}>Sign Up!</Text>
-          </TouchableOpacity>
+        <Text style={styles.title3}>Don't have an account?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+          <Text style={styles.title4}>Sign Up!</Text>
+        </TouchableOpacity>
       </View>
-
-    <View style={styles.container}>
-
-      <Text style={styles.subin}>Email</Text>
-      <TextInput
-        style={styles.input}
-        placeholder=""
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <Text style={styles.subin}>Password</Text>
-      <TextInput
-        style={styles.input}
-        placeholder=""
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <TouchableOpacity style={styles.sign} onPress={handleSignIn}>
-        <Text style={styles.buttonText}>Sign In</Text>
-      </TouchableOpacity>
-      
-    </View>
+      <View style={styles.container}>
+        <Text style={styles.subin}>Email</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <Text style={styles.subin}>Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity style={styles.sign} onPress={handleSignIn}>
+          <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
+      </View>
     </ImageBackground>
   );
 }
-
 
 
 const styles = StyleSheet.create({

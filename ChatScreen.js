@@ -1,89 +1,133 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import api from './api'; // Usamos la configuración de Axios para la API
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Para obtener el user_id
 
-const messages = [
-  {
-    id: '1',
-    sender: 'user',
-    text: 'Hello, Doctor! How Are You Doing?',
-    time: '12:10',
-    avatar: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '2',
-    sender: 'doctor',
-    text: 'We denounce with righteous indignation and dislike men with women that they cannot foresee the pain.',
-    time: '12:37',
-    avatar: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '3',
-    sender: 'user',
-    text: 'When nothing prevents our being able to do what we like best, every plea is to be welcomed.',
-    time: '12:57',
-    avatar: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '4',
-    sender: 'doctor',
-    text: "If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything extraordinary.",
-    time: '13:20',
-    avatar: 'https://via.placeholder.com/50',
-  },
-  {
-    id: '5',
-    sender: 'user',
-    text: 'There are many variations of passages of Lorem Ipsum available, but the majority have suffered.',
-    time: '13:57',
-    avatar: 'https://via.placeholder.com/50',
-  },
-];
-
+// Componente de cada mensaje
 const MessageItem = ({ item }) => (
   <View
-    style={[
-      styles.messageContainer,
-      item.sender === 'user' ? styles.messageUser : styles.messageDoctor,
-    ]}
+    style={[styles.messageContainer, item.sender === 'user' ? styles.messageUser : styles.messageDoctor]}
   >
+    {/* Mostrar la imagen del doctor si es un mensaje del doctor */}
     {item.sender === 'doctor' && (
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
+      <Image
+        source={{ uri: item.image_url || 'https://via.placeholder.com/50' }} // Usa una imagen por defecto si no tiene URL
+        style={styles.avatar}
+      />
     )}
     <View
-      style={[
-        styles.messageBubble,
-        item.sender === 'user' ? styles.bubbleUser : styles.bubbleDoctor,
-      ]}
+      style={[styles.messageBubble, item.sender === 'user' ? styles.bubbleUser : styles.bubbleDoctor]}
     >
-      <Text style={styles.messageText}>{item.text}</Text>
-      <Text style={styles.messageTime}>{item.time}</Text>
+      <Text style={styles.messageText}>{item.message}</Text>
+      <Text style={styles.messageTime}>{item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : 'Unknown time'}</Text>
     </View>
+    {/* Mostrar la imagen del usuario si es un mensaje del usuario */}
     {item.sender === 'user' && (
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
+      <Image
+        source={{ uri: item.image_url || 'https://via.placeholder.com/50' }} // Usa una imagen por defecto si no tiene URL
+        style={styles.avatar}
+      />
     )}
   </View>
 );
 
 export default function ChatScreen({ route, navigation }) {
-  const { doctor } = route.params;
-
+  const { doctorId, doctorName } = route.params;  // Obtener el doctorId y doctorName desde las props
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      alert(`Message sent: ${newMessage}`);
-      setNewMessage('');
+  // Cargar los mensajes previos
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+        if (!userId) {
+          Alert.alert('Error', 'No se encontró el ID del usuario.');
+          return;
+        }
+
+        // Obtener los mensajes entre el usuario y el doctor
+        const response = await api.get(`/messages/user/${userId}/doctor/${doctorId}`);
+        
+        // Agregar URLs de imagen para el usuario y doctor si no las tienen
+        const messagesWithImages = await Promise.all(response.data.map(async (msg) => {
+          // Obtener la imagen del doctor si es un mensaje del doctor
+          let doctorImageUrl = 'https://via.placeholder.com/50'; // Imagen por defecto
+          if (msg.sender === 'doctor') {
+            const doctorResponse = await api.get(`/doctors/${doctorId}`);
+            doctorImageUrl = doctorResponse.data.image_url || 'https://via.placeholder.com/50'; // URL de imagen del doctor
+          }
+
+          // Obtener la imagen del usuario si es un mensaje del usuario
+          let userImageUrl = 'https://via.placeholder.com/50'; // Imagen por defecto
+          if (msg.sender === 'user') {
+            const userResponse = await api.get(`/users/${userId}`);
+            userImageUrl = userResponse.data.image_url || 'https://via.placeholder.com/50'; // URL de imagen del usuario
+          }
+
+          return {
+            ...msg,
+            image_url: msg.sender === 'user' ? userImageUrl : doctorImageUrl,
+          };
+        }));
+
+        setMessages(messagesWithImages); // Asignar los mensajes a la lista
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al obtener los mensajes:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [doctorId]);
+
+  const sendMessage = async () => {
+    if (!newMessage.trim()) {
+      Alert.alert('Error', 'Por favor escribe un mensaje antes de enviarlo.');
+      return;
+    }
+
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) {
+        Alert.alert('Error', 'No se encontró el ID del usuario.');
+        return;
+      }
+
+      // Enviar el mensaje
+      const response = await api.post('/messages', {
+        user_id: userId,
+        doctor_id: doctorId,
+        message: newMessage,
+        sender: 'user', // El mensaje es del usuario
+        timestamp: new Date().toISOString(),
+      });
+
+      // Si el mensaje fue enviado correctamente, lo agregamos a la lista
+      if (response.status === 201) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            message: newMessage,
+            sender: 'user',
+            timestamp: new Date().toISOString(),
+            image_url: 'https://via.placeholder.com/50', // Agregar URL de imagen del usuario
+          },
+        ]);
+        setNewMessage(''); // Limpiar el campo de entrada
+      }
+    } catch (error) {
+      console.error('Error al enviar el mensaje:', error);
+      Alert.alert('Error', 'Hubo un problema al enviar el mensaje');
     }
   };
+
+  if (loading) {
+    return <Text>Cargando mensajes...</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -92,7 +136,7 @@ export default function ChatScreen({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#4E89E8" />
         </TouchableOpacity>
-        <Text style={styles.title}>{doctor.name}</Text>
+        <Text style={styles.title}>{doctorName}</Text>
         <TouchableOpacity>
           <Ionicons name="search" size={24} color="#4E89E8" />
         </TouchableOpacity>
@@ -101,7 +145,7 @@ export default function ChatScreen({ route, navigation }) {
       {/* Lista de mensajes */}
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id ? item.id.toString() : `${item.timestamp}`} // Usar timestamp si no hay id
         renderItem={({ item }) => <MessageItem item={item} />}
         contentContainerStyle={styles.messagesList}
       />

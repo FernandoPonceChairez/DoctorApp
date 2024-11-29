@@ -11,32 +11,11 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker'; // Importar DateTimePicker
 
-const doctors = [
-  { id: '1', name: 'Dr. Serena Gomez', specialty: 'Cardiologist', area: 'Downtown', clinic: 'New City Clinic' },
-  { id: '2', name: 'Dr. Simata Baroi', specialty: 'Cardiologist', area: 'Uptown', clinic: 'New City Clinic' },
-  { id: '3', name: 'Dr. John Doe', specialty: 'Dermatologist', area: 'Downtown', clinic: 'HealthPlus Center' },
-  { id: '4', name: 'Dr. Emily Stone', specialty: 'Dermatologist', area: 'Uptown', clinic: 'HealthCare Hospital' },
-  { id: '5', name: 'Dr. Asma Khan', specialty: 'Pediatrician', area: 'Suburbs', clinic: 'Child Care Clinic' },
-  { id: '6', name: 'Dr. Michael Ross', specialty: 'Orthopedic', area: 'Downtown', clinic: 'Bone & Joint Center' },
-  { id: '7', name: 'Dr. Priya Sharma', specialty: 'Gynecologist', area: 'Suburbs', clinic: 'Women’s Health Center' },
-  { id: '8', name: 'Dr. Ethan Hunt', specialty: 'Neurologist', area: 'Uptown', clinic: 'Brain & Spine Clinic' },
-  { id: '9', name: 'Dr. Ana Lopez', specialty: 'Ophthalmologist', area: 'Downtown', clinic: 'Vision Care Clinic' },
-  { id: '10', name: 'Dr. Nathan King', specialty: 'General Physician', area: 'Midtown', clinic: 'Family Health Clinic' },
-  { id: '11', name: 'Dr. Sofia Martinez', specialty: 'Cardiologist', area: 'Suburbs', clinic: 'HeartCare Center' },
-  { id: '12', name: 'Dr. James Lee', specialty: 'ENT Specialist', area: 'Downtown', clinic: 'Hearing & Nose Center' },
-  { id: '13', name: 'Dr. Clara Oswald', specialty: 'Psychiatrist', area: 'Uptown', clinic: 'Mind Wellness Clinic' },
-  { id: '14', name: 'Dr. Ali Rehman', specialty: 'Urologist', area: 'Midtown', clinic: 'Kidney Health Center' },
-  { id: '15', name: 'Dr. Grace Taylor', specialty: 'Endocrinologist', area: 'Downtown', clinic: 'Diabetes Care Clinic' },
-];
-
-
 export default function SearchSpecialistScreen({ navigation }) {
   const [area, setArea] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-
-  
 
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -45,13 +24,12 @@ export default function SearchSpecialistScreen({ navigation }) {
   };
 
   const handleSearch = () => {
-    const filteredDoctors = doctors.filter(
-      (doctor) =>
-        (area === '' || doctor.area === area) &&
-        (specialty === '' || doctor.specialty === specialty)
-    );
-
-    navigation.navigate('SearchResults', { results: filteredDoctors });
+    // Enviar parámetros a la pantalla de resultados
+    navigation.navigate('SearchResults', {
+      specialty,
+      area,
+      date: date.toISOString(), // Pasamos la fecha como string ISO
+    });
   };
 
   return (
@@ -61,7 +39,7 @@ export default function SearchSpecialistScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#4E89E8" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} >Search Here</Text>
+        <Text style={styles.headerTitle}>Search Here</Text>
       </View>
 
       {/* Contenido principal */}
@@ -126,9 +104,9 @@ export default function SearchSpecialistScreen({ navigation }) {
 
       {/* Imagen inferior */}
       <View style={styles.footerImage}>
-      <ImageBackground source={require('./assets/SearchHerePhoto.png')} style={styles.background}>
-        <Text style={{ color: 'transparent', fontSize: 16 }}>Search Here</Text>
-      </ImageBackground>
+        <ImageBackground source={require('./assets/SearchHerePhoto.png')} style={styles.background}>
+          <Text style={{ color: 'transparent', fontSize: 16 }}>Search Here</Text>
+        </ImageBackground>
       </View>
     </View>
   );

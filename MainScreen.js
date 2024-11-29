@@ -36,7 +36,7 @@ const doctors = [
     specialty: 'Medicine Specialist',
     experience: '5 Years',
     patients: '2.7K',
-    image: require('./assets/doc2.png'),
+    image: require('./assets/doc1.png'),
     reviews: '1.5K',
     proffesion:'Heart & Mind',
     slogan:'Good Healt Clinic',
@@ -102,7 +102,7 @@ const MainScreen = () => {
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.categoryCard}>
+              <TouchableOpacity style={styles.categoryCard} onPress={() => navigation.navigate('Doctors')}>
                 <Image 
                   source={item.icon} 
                   style={styles.categoryImage} 
@@ -178,13 +178,17 @@ const MainScreen = () => {
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
-              setMenuVisible(false);
-              alert('Logged Out');
+              setMenuVisible(false); // Cierra el menú flotante
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SignIn' }], // Redirige al inicio de sesión
+              });
             }}
           >
             <Ionicons name="log-out-outline" size={24} color="#FFF" />
             <Text style={styles.menuText}>Log Out</Text>
           </TouchableOpacity>
+
         </View>
       )}
 
@@ -196,21 +200,20 @@ const MainScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Doctors')}>
           <MaterialCommunityIcons name="stethoscope" size={24} color="#4E89E8" />
-          
+          <Text style={styles.tabLabelInactive}>Doctors</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
           <Ionicons name="notifications" size={24} color="#4E89E8" />
-          
+          <Text style={styles.tabLabelInactive}>Alerts</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem} onPress={toggleMenu}>
           <Ionicons name="grid" size={24} color="#4E89E8" />
-          
+          <Text style={styles.tabLabelInactive}>More</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

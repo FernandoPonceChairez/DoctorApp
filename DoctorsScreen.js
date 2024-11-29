@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,56 +7,56 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  Alert,
 } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-
-const doctors = [
-  { id: '1', name: 'Dr. Serena Gomez', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 5 },
-  { id: '2', name: 'Dr. Farid Raihan', specialty: 'Pediatrician', experience: '7 Years', patients: '3.09K', rating: 5 },
-  { id: '3', name: 'Dr. Kiran Shakia', specialty: 'Pediatrician', experience: '8 Years', patients: '1.08K', rating: 4 },
-  { id: '4', name: 'Dr. Masuda Khan', specialty: 'Pediatrician', experience: '1 Year', patients: '2.10K', rating: 4 },
-  { id: '5', name: 'Dr. Johir Raihan', specialty: 'Pediatrician', experience: '4 Years', patients: '937', rating: 4 },
-  { id: '6', name: 'Dr. Saima Khan', specialty: 'Pediatrician', experience: '2 Years', patients: '569', rating: 3 },
-  { id: '7', name: 'Dr. Depika Khan', specialty: 'Pediatrician', experience: '5 Years', patients: '1.5K', rating: 5 },
-  { id: '8', name: 'Dr. Rahima Khan', specialty: 'Pediatrician', experience: '3 Years', patients: '790', rating: 4 },
-
-  // Neurosurgeon
-  { id: '9', name: 'Dr. Samuel Adams', specialty: 'Neurosurgeon', experience: '10 Years', patients: '2.5K', rating: 5 },
-  { id: '10', name: 'Dr. Eleanor White', specialty: 'Neurosurgeon', experience: '12 Years', patients: '3.2K', rating: 5 },
-  { id: '11', name: 'Dr. Michael Brown', specialty: 'Neurosurgeon', experience: '9 Years', patients: '1.9K', rating: 4 },
-
-  // Cardiologist
-  { id: '12', name: 'Dr. Emily Stone', specialty: 'Cardiologist', experience: '15 Years', patients: '4.1K', rating: 5 },
-  { id: '13', name: 'Dr. Chris Evans', specialty: 'Cardiologist', experience: '8 Years', patients: '2.7K', rating: 4 },
-  { id: '14', name: 'Dr. Rachel Green', specialty: 'Cardiologist', experience: '11 Years', patients: '3.5K', rating: 5 },
-];
+import { Ionicons } from '@expo/vector-icons';
+import api from './api'; // Configuración de Axios para la API
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DoctorsScreen({ navigation }) {
   const [selectedSpecialty, setSelectedSpecialty] = useState('Pediatrician');
+  const [doctors, setDoctors] = useState([]); // Lista de doctores
+  const [loading, setLoading] = useState(true);
+  const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuVisible(!isMenuVisible);
+  };
 
   const specialties = ['Pediatrician', 'Neurosurgeon', 'Cardiologist', 'Psychiatrist'];
 
-  const filteredDoctors = doctors.filter((doctor) => doctor.specialty === selectedSpecialty);
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await api.get('/doctors', {
+          params: { specialty: selectedSpecialty },
+        });
+        setDoctors(response.data);
+        setLoading(false); // Cuando se obtiene la respuesta, paramos la carga
+      } catch (error) {
+        console.error('Error al obtener doctores:', error);
+        Alert.alert('Error', 'Hubo un problema al cargar los doctores');
+        setLoading(false);
+      }
+    };
 
-  const getDoctorImage = (name) => {
-    const femaleDoctors = [
-      'Dr. Serena Gomez',
-      'Dr. Kiran Shakia',
-      'Dr. Masuda Khan',
-      'Dr. Saima Khan',
-      'Dr. Depika Khan',
-      'Dr. Rahima Khan',
-      'Dr. Eleanor White',
-      'Dr. Emily Stone',
-      'Dr. Rachel Green',
-    ];
+    fetchDoctors();
+  }, [selectedSpecialty]);
 
-    if (femaleDoctors.includes(name)) {
-      return 'https://via.placeholder.com/100.png?text=Female+Doctor';
-    } else {
-      return 'https://via.placeholder.com/100.png?text=Male+Doctor';
-    }
+  // Función para obtener la imagen del doctor
+  const getDoctorImage = (imageUrl) => {
+    return imageUrl || 'https://via.placeholder.com/100.png?text=Doctor';
   };
+
+  // Función para navegar a la pantalla de detalles del doctor
+  const handleDoctorPress = (doctorId) => {
+    navigation.navigate('SpecialistInfo', { doctorId });
+  };
+
+  // Si estamos cargando, mostramos el indicador de carga
+  if (loading) {
+    return <Text>Cargando doctores...</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -97,12 +97,12 @@ export default function DoctorsScreen({ navigation }) {
 
       {/* Lista de doctores */}
       <FlatList
-        data={filteredDoctors}
-        keyExtractor={(item) => item.id}
+        data={doctors}
+        keyExtractor={(item) => item.id.toString()} // Aseguramos que el ID sea único
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('SpecialistInfo', { doctor: item })}
+            onPress={() => handleDoctorPress(item.id)} // Navegar al chat con el doctor
           >
             <View>
               <View style={styles.infoContainer}>
@@ -110,15 +110,15 @@ export default function DoctorsScreen({ navigation }) {
                 <Text style={styles.specialty}>{item.specialty}</Text>
                 <Image source={require('./assets/estrellas.png')} style={styles.image2} />
                 <Text style={styles.details}>Experience</Text>
-                <Text style={styles.details2}>{item.experience}</Text>
+                <Text style={styles.details2}>{item.experience_years} Years</Text>
                 <Text style={styles.details}>Patients</Text>
-                <Text style={styles.details2}>{item.patients}</Text>
+                <Text style={styles.details2}>{item.patient_count}K</Text>
               </View>
             </View>
             <View>
               <Image
                 source={{
-                  uri: getDoctorImage(item.name),
+                  uri: getDoctorImage(item.image_url), // Imagen del doctor desde la API
                 }}
                 style={styles.image}
               />
@@ -130,27 +130,76 @@ export default function DoctorsScreen({ navigation }) {
         contentContainerStyle={styles.listContainer}
       />
 
+
+      {/* Menú flotante */}
+      {isMenuVisible && (
+        <View style={styles.floatingMenu}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('MyAppointment'); // Pantalla My Appointment
+            }}
+          >
+            <Ionicons name="calendar-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>My Appointment</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('Profile'); // Pantalla Profile
+            }}
+          >
+            <Ionicons name="person-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('Settings'); // Pantalla Settings
+            }}
+          >
+            <Ionicons name="settings-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false); // Cierra el menú flotante
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SignIn' }], // Redirige al inicio de sesión
+              });
+            }}
+          >
+            <Ionicons name="log-out-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Log Out</Text>
+          </TouchableOpacity>
+
+        </View>
+      )}
+
       {/* Barra de navegación inferior */}
       <View style={styles.tabBar}>
-  <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-    <Ionicons name="home" size={24} color="#4E89E8" />
-    <Text style={styles.tabLabel}>Home</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]}>
-    <Ionicons name="stethoscope" size={24} color="#FFF" />
-    <Text style={[styles.tabLabel, styles.tabLabelActive]}>Doctors</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
-    <Ionicons name="notifications" size={24} color="#4E89E8" />
-    <Text style={styles.tabLabel}>Alerts</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Menu')}>
-    <Ionicons name="grid" size={24} color="#4E89E8" />
-    <Text style={styles.tabLabel}>More</Text>
-  </TouchableOpacity>
-</View>
-
-
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Main')}>
+          <Ionicons name="home" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabel}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]}>
+          <Ionicons name="stethoscope" size={24} color="#FFF" />
+          <Text style={[styles.tabLabel, styles.tabLabelActive]}>Doctors</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
+          <Ionicons name="notifications" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabel}>Alerts</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={toggleMenu}>
+          <Ionicons name="grid" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabelInactive}>More</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -205,13 +254,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
   },
-  tabLabel: {
+  tabLabelInactive: {
+    color: '#4E89E8',
     fontSize: 12,
-    color: '#777',
-    marginLeft: 8,
+    marginTop: 5,
+    marginLeft:3,
   },
   tabLabelActive: {
     color: '#FFF',
+    fontWeight: 'bold',
+  },floatingMenu: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    right: 20,
+    backgroundColor: '#4E89E8',
+    borderRadius: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    elevation: 10,
+  },menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFF',
+  },
+  menuText: {
+    marginLeft: 15,
+    color: '#FFF',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

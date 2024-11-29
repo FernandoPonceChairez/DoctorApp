@@ -1,124 +1,133 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   FlatList,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
   Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import api from './api'; // Configuración de Axios para la API
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const initialMessages = [
-  {
-    id: '1',
-    type: 'received',
-    message: 'Hello Doctor! How are you doing?',
-    time: '12:10',
-    image: 'https://via.placeholder.com/40',
-  },
-];
+export default function MyChatsScreen({ navigation }) {
+  const [chats, setChats] = useState([]); // Lista de chats con los doctores
+  const [loading, setLoading] = useState(true); // Estado de carga
 
-export default function ChatScreen() {
-  const [messages, setMessages] = useState(initialMessages);
-  const [inputText, setInputText] = useState('');
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+        if (!userId) {
+          Alert.alert('Error', 'Usuario no encontrado');
+          return;
+        }
 
-  const handleSend = () => {
-    if (inputText.trim() === '') return;
+        // Obtener los mensajes entre el usuario y los doctores
+        const response = await api.get(`/messages/user/${userId}`);
+        if (response.data.length === 0) {
+          Alert.alert('No chats', 'No tienes chats previos');
+        } else {
+          // Agrupar los mensajes por doctor y obtener el último mensaje
+          const chatsWithDoctorInfo = await Promise.all(
+            response.data.map(async (message) => {
+              // Obtener el doctor_id de cada mensaje
+              const doctorResponse = await api.get(`/doctors/${message.doctor_id}`);
+              return {
+                ...message,
+                doctorName: doctorResponse.data.name,
+                doctorImage: doctorResponse.data.image_url || 'https://via.placeholder.com/50',
+                created_at: message.created_at,
+                doctor_id: message.doctor_id,
+              };
+            })
+          );
 
-    const userMessage = {
-      id: Date.now().toString(),
-      type: 'sent',
-      message: inputText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      image: 'https://via.placeholder.com/40',
+          // Agrupar los chats por doctor y obtener el último mensaje
+          const groupedChats = groupChatsByDoctor(chatsWithDoctorInfo);
+          setChats(groupedChats);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al obtener los chats:', error);
+        Alert.alert('Error', 'Hubo un problema al cargar los chats');
+        setLoading(false);
+      }
     };
 
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setInputText('');
+    fetchChats();
+  }, []);
 
-    setTimeout(() => {
-      const doctorMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'received',
-        message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        image: 'https://via.placeholder.com/40',
-      };
-      setMessages((prevMessages) => [...prevMessages, doctorMessage]);
-    }, 1000); // Simula un retraso de 1 segundo
+  // Función para agrupar los mensajes por doctor y obtener el último mensaje
+  const groupChatsByDoctor = (messages) => {
+    const grouped = {};
+
+    // Agrupamos los mensajes por doctor y seleccionamos el más reciente
+    messages.forEach((message) => {
+      if (!grouped[message.doctor_id]) {
+        grouped[message.doctor_id] = {
+          doctor_id: message.doctor_id,
+          doctor_name: message.doctorName,
+          doctor_image: message.doctorImage,
+          last_message: message.message,  // Guardamos el primer mensaje como el último
+          created_at: message.created_at, // Fecha del primer mensaje
+        };
+      } else {
+        // Comparamos la fecha de creación para actualizar con el mensaje más reciente
+        if (new Date(message.created_at) > new Date(grouped[message.doctor_id].created_at)) {
+          grouped[message.doctor_id].last_message = message.message;
+          grouped[message.doctor_id].created_at = message.created_at;
+        }
+      }
+    });
+
+    // Convertir el objeto en un array para usarlo en el FlatList
+    return Object.values(grouped);
   };
 
-  const renderMessage = ({ item }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.type === 'sent' ? styles.sentMessage : styles.receivedMessage,
-      ]}
-    >
-      <Image source={{ uri: item.image }} style={styles.avatar} />
-      <View style={styles.messageContent}>
-        <View
-          style={[
-            styles.messageBubble,
-            item.type === 'sent' ? styles.sentBubble : styles.receivedBubble,
-          ]}
-        >
-          <Text style={styles.messageText}>{item.message}</Text> {/* Asegúrate de que el texto esté en <Text> */}
-        </View>
-        <Text style={styles.messageTime}>{item.time}</Text> {/* Hora dentro de <Text> */}
-      </View>
-    </View>
-  );
+  // Función para navegar al chat con el doctor
+  const handleChatPress = (doctorId) => {
+    navigation.navigate('Chat', { doctorId });
+  };
+
+  // Si estamos cargando, mostrar indicador de carga
+  if (loading) {
+    return <Text>Cargando chats...</Text>;
+  }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Encabezado */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="chevron-back" size={24} color="#4E89E8" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Dr. Nurjahan Khan</Text> {/* Título envuelto correctamente */}
-        <View style={{ width: 24 }} /> {/* Espacio para centrar el título */}
+        <Text style={styles.title}>My Chats</Text>
       </View>
 
-      {/* Chat Messages */}
+      {/* Lista de chats */}
       <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
-        contentContainerStyle={styles.chatContainer}
+        data={chats}
+        keyExtractor={(item) => item.doctor_id.toString()} // Usamos doctor_id como key
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.chatCard}
+            onPress={() => handleChatPress(item.doctor_id)} // Navegar al chat
+          >
+            <Image
+              source={{ uri: item.doctor_image }}
+              style={styles.avatar}
+            />
+            <View style={styles.chatInfo}>
+              <Text style={styles.chatDoctorName}>{item.doctor_name}</Text>
+              {/* Muestra el último mensaje debajo del nombre */}
+              <Text style={styles.chatLastMessage}>{item.last_message}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#4E89E8" />
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={styles.chatList}
       />
-
-      {/* Input Field */}
-      <View style={styles.inputContainer}>
-        <View style={styles.inputRow}>
-          {/* Emoji Icon */}
-          <TouchableOpacity>
-            <Ionicons name="happy-outline" size={24} color="#B0B3C7" style={styles.icon} />
-          </TouchableOpacity>
-
-          {/* Attachment Icon */}
-          <TouchableOpacity>
-            <Ionicons name="attach-outline" size={24} color="#B0B3C7" style={styles.icon} />
-          </TouchableOpacity>
-
-          {/* Text Input */}
-          <TextInput
-            style={styles.textInput}
-            placeholder="Type Your Message"
-            placeholderTextColor="#B0B3C7"
-            value={inputText}
-            onChangeText={setInputText}
-          />
-
-          {/* Send Button */}
-          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-            <Ionicons name="send" size={20} color="#FFF" />
-          </TouchableOpacity>
-        </View>
-      </View>
     </View>
   );
 }
@@ -126,101 +135,47 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF', // Fondo blanco
+    backgroundColor: '#F9FAFC',
+    padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#FFF', // Fondo blanco sin sombras
-    marginTop: 35, // Baja el encabezado
+    marginBottom: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    position: 'absolute',
-    left: '50%',
-    transform: [{ translateX: -50 }],
   },
-  chatContainer: {
-    flexGrow: 1,
-    padding: 10,
-    backgroundColor: '#F7F7F7', // Fondo gris claro
+  chatList: {
+    paddingBottom: 20,
   },
-  messageContainer: {
+  chatCard: {
     flexDirection: 'row',
-    marginVertical: 5,
-  },
-  sentMessage: {
-    alignSelf: 'flex-end',
-    flexDirection: 'row-reverse',
-  },
-  receivedMessage: {
-    alignSelf: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    elevation: 3,
+    justifyContent: 'space-between',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 8, // Imagen cuadrada
-    marginHorizontal: 5,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
   },
-  messageContent: {
-    maxWidth: '70%',
-    alignItems: 'flex-start',
-  },
-  messageBubble: {
-    padding: 10,
-    borderRadius: 20,
-    elevation: 1,
-  },
-  sentBubble: {
-    backgroundColor: '#4E89E8',
-  },
-  receivedBubble: {
-    backgroundColor: '#FFF',
-    borderColor: '#DDD',
-    borderWidth: 1,
-  },
-  messageText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  messageTime: {
-    fontSize: 10,
-    color: '#888',
-    marginTop: 5,
-    textAlign: 'left',
-  },
-  inputContainer: {
-    padding: 10,
-    backgroundColor: '#F7F7F7', 
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 30,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    elevation: 5, 
-  },
-  textInput: {
+  chatInfo: {
     flex: 1,
+  },
+  chatDoctorName: {
     fontSize: 16,
-    marginHorizontal: 10,
+    fontWeight: 'bold',
     color: '#333',
   },
-  icon: {
-    marginHorizontal: 5,
-  },
-  sendButton: {
-    backgroundColor: '#4E89E8',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  chatLastMessage: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 5,  // Agregamos un margen para separar el mensaje del nombre
   },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
@@ -63,6 +63,11 @@ const NotificationItem = ({ item }) => (
 );
 
 export default function NotificationsScreen({ navigation }) {
+  const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuVisible(!isMenuVisible);
+  };
   const groupedNotifications = notifications.reduce((acc, notification) => {
     if (!acc[notification.date]) {
       acc[notification.date] = [];
@@ -94,23 +99,73 @@ export default function NotificationsScreen({ navigation }) {
         )}
       />
 
+      {/* Menú flotante */}
+      {isMenuVisible && (
+        <View style={styles.floatingMenu}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('MyAppointment'); // Pantalla My Appointment
+            }}
+          >
+            <Ionicons name="calendar-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>My Appointment</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('Profile'); // Pantalla Profile
+            }}
+          >
+            <Ionicons name="person-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate('Settings'); // Pantalla Settings
+            }}
+          >
+            <Ionicons name="settings-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false); // Cierra el menú flotante
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SignIn' }], // Redirige al inicio de sesión
+              });
+            }}
+          >
+            <Ionicons name="log-out-outline" size={24} color="#FFF" />
+            <Text style={styles.menuText}>Log Out</Text>
+          </TouchableOpacity>
+
+        </View>
+      )}
+
       {/* Barra de navegación inferior */}
       <View style={styles.tabBar}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Main')}>
           <Ionicons name="home" size={24} color="#4E89E8" />
           <Text style={styles.tabLabel}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Doctors')}>
-          <FontAwesome5 name="stethoscope" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabel}>Doctors</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={[styles.tabItem, styles.tabItemActive]}>
-          <Ionicons name="notifications" size={24} color="#FFF" />
-          <Text style={[styles.tabLabel, styles.tabLabelActive]}>Alerts</Text>
+          <Ionicons name="stethoscope" size={24} color="#FFF" />
+          <Text style={[styles.tabLabel, styles.tabLabelActive]}>Doctors</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Menu')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
+          <Ionicons name="notifications" size={24} color="#4E89E8" />
+          <Text style={styles.tabLabel}>Alerts</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={toggleMenu}>
           <Ionicons name="grid" size={24} color="#4E89E8" />
-          <Text style={styles.tabLabel}>More</Text>
+          <Text style={styles.tabLabelInactive}>More</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -201,6 +256,29 @@ const styles = StyleSheet.create({
   },
   tabLabelActive: {
     color: '#FFF',
+    fontWeight: 'bold',
+  },
+  floatingMenu: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    right: 20,
+    backgroundColor: '#4E89E8',
+    borderRadius: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    elevation: 10,
+  },menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFF',
+  },
+  menuText: {
+    marginLeft: 15,
+    color: '#FFF',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Alert, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import api from './api';
 
 export default function SignUpScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -10,20 +9,51 @@ export default function SignUpScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Verifica formato de correo válido
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^[0-9]{10}$/; // Permite números de 10 dígitos
+    return phoneRegex.test(phone);
+  };
+
   const handleSignUp = async () => {
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+    // Validaciones
+    if (!username.trim()) {
+      Alert.alert('Error', 'El nombre de usuario no puede estar vacío.');
       return;
     }
 
-    // Guardar la información del usuario en AsyncStorage
+    if (!email.trim() || !validateEmail(email)) {
+      Alert.alert('Error', 'Ingresa un correo electrónico válido.');
+      return;
+    }
+
+    if (!phone.trim() || !validatePhone(phone)) {
+      Alert.alert('Error', 'Ingresa un número de teléfono válido de 10 dígitos.');
+      return;
+    }
+
+    if (!password.trim() || password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden.');
+      return;
+    }
+
+    // Enviar solicitud a la API
     try {
-      const user = { username, email, password, phone };
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      Alert.alert('Success', 'User registered successfully');
-      navigation.navigate('SignIn'); // Navegar a la pantalla de inicio de sesión
+      await api.post('/users/register', { name: username, email, phone, password });
+      Alert.alert('Éxito', 'Usuario registrado correctamente.');
+      navigation.navigate('SignIn');
     } catch (error) {
-      console.error('Error saving user', error);
+      console.error('Error durante el registro:', error.response?.data || error.message);
+      Alert.alert('Error', error.response?.data?.message || 'Error al registrar el usuario.');
     }
   };
 
@@ -33,64 +63,55 @@ export default function SignUpScreen({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <View>
-        <Text style={styles.title}>Create Account</Text>
-
-        <View style={styles.title2}>
-          <Text style={styles.title3}>Already have an account?</Text>
-          <TouchableOpacity  onPress={() => navigation.navigate('SignIn')}>
-            <Text style={styles.title4}>Sign In!</Text>
-          </TouchableOpacity>
-        </View>
-        
+      <Text style={styles.title}>Crear Cuenta</Text>
+      <View style={styles.title2}>
+        <Text style={styles.title3}>¿Ya tienes una cuenta?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+          <Text style={styles.title4}>¡Inicia Sesión!</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.container}>
-        
-        <Text style={styles.subin}>Username</Text>
+        <Text style={styles.subin}>Nombre de usuario</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="Ej: Juan Pérez"
           value={username}
           onChangeText={setUsername}
         />
-
-        <Text style={styles.subin}>Email</Text>
+        <Text style={styles.subin}>Correo electrónico</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="correo@ejemplo.com"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
         />
-        <Text style={styles.subin}>Phone</Text>
+        <Text style={styles.subin}>Teléfono</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="1234567890"
           keyboardType="phone-pad"
           value={phone}
           onChangeText={setPhone}
         />
-
-        <Text style={styles.subin}>Password</Text>
+        <Text style={styles.subin}>Contraseña</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="Mínimo 6 caracteres"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
-
-        <Text style={styles.subin}>Confirm password</Text>
+        <Text style={styles.subin}>Confirmar contraseña</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
+          placeholder="Repite tu contraseña"
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
-
         <TouchableOpacity style={styles.sign} onPress={handleSignUp}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+          <Text style={styles.buttonText}>Registrar</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
