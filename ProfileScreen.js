@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuth, updateProfile, updateEmail } from 'firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
-import api from './api';
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null); // Estado inicial vacío
@@ -13,15 +12,30 @@ export default function ProfileScreen({ navigation }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userId = await AsyncStorage.getItem('userId'); // Recuperar ID del usuario desde el almacenamiento
-        if (!userId) {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
           Alert.alert('Error', 'No se encontró información del usuario.');
           navigation.reset({ index: 0, routes: [{ name: 'SignIn' }] }); // Redirigir al inicio de sesión
           return;
         }
-        const response = await api.get(`/users/${userId}`); // Obtener datos del usuario
-        setUser(response.data); // Actualizar el estado con los datos del usuario
-        setFormData(response.data); // Inicializar el formulario
+
+        // Cargar información del usuario desde Firebase
+        setUser({
+          name: currentUser.displayName || 'No Name',
+          email: currentUser.email,
+          phone: currentUser.phoneNumber || 'No Phone',
+          image_url: currentUser.photoURL || 'https://via.placeholder.com/100.png?text=No+Image',
+        });
+
+        // Inicializar formulario con los datos
+        setFormData({
+          name: currentUser.displayName || '',
+          email: currentUser.email,
+          phone: currentUser.phoneNumber || '',
+          image_url: currentUser.photoURL || '',
+        });
       } catch (error) {
         console.error('Error al cargar los datos del usuario:', error);
         Alert.alert('Error', 'No se pudieron cargar los datos del usuario.');
@@ -33,10 +47,28 @@ export default function ProfileScreen({ navigation }) {
 
   const handleSave = async () => {
     try {
-      await api.put(`/users/${user.id}`, formData); // Actualizar datos del usuario en la API
-      setUser(formData); // Actualizar el estado del usuario con los datos editados
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        Alert.alert('Error', 'Usuario no autenticado.');
+        return;
+      }
+
+      // Actualizar el perfil del usuario en Firebase
+      await updateProfile(currentUser, {
+        displayName: formData.name,
+        photoURL: formData.image_url,
+      });
+
+      // Actualizar el correo electrónico
+      if (formData.email !== currentUser.email) {
+        await updateEmail(currentUser, formData.email);
+      }
+
+      setUser(formData); // Actualizar estado local
       setIsEditing(false); // Salir del modo de edición
-      Alert.alert('Success', 'Perfil actualizado correctamente.');
+      Alert.alert('Éxito', 'Perfil actualizado correctamente.');
     } catch (error) {
       console.error('Error al actualizar el perfil:', error);
       Alert.alert('Error', 'No se pudo actualizar el perfil.');
@@ -110,28 +142,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
         <View style={styles.detailBox}>
           <Text style={styles.label}>Mobile Number</Text>
-          {isEditing ? (
-            <TextInput
-              style={styles.input}
-              value={formData.phone}
-              keyboardType="phone-pad"
-              onChangeText={(text) => setFormData({ ...formData, phone: text })}
-            />
-          ) : (
-            <Text style={styles.value}>{user.phone}</Text>
-          )}
-        </View>
-        <View style={styles.detailBox}>
-          <Text style={styles.label}>Address</Text>
-          {isEditing ? (
-            <TextInput
-              style={styles.input}
-              value={formData.address}
-              onChangeText={(text) => setFormData({ ...formData, address: text })}
-            />
-          ) : (
-            <Text style={styles.value}>{user.address}</Text>
-          )}
+          <Text style={styles.value}>{user.phone || 'No Phone Number'}</Text>
         </View>
       </View>
 
@@ -144,7 +155,6 @@ export default function ProfileScreen({ navigation }) {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -160,7 +170,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    marginTop:40
+    marginTop: 40,
   },
   headerTitle: {
     fontSize: 18,
@@ -197,5 +207,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginTop: 5,
+  },
+  input: {
+    fontSize: 16,
+    color: '#333',
+    marginTop: 5,
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderRadius: 5,
+    padding: 8,
+  },
+  saveButton: {
+    backgroundColor: '#4E89E8',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+  saveButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

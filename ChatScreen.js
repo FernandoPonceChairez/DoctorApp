@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import api from './api'; // Usamos la configuración de Axios para la API
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Para obtener el user_id
+import { getFirestore, collection, query, where, onSnapshot, addDoc, orderBy } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
-// Componente de cada mensaje
 const MessageItem = ({ item }) => (
   <View
     style={[styles.messageContainer, item.sender === 'user' ? styles.messageUser : styles.messageDoctor]}
   >
-    {/* Mostrar la imagen del doctor si es un mensaje del doctor */}
     {item.sender === 'doctor' && (
       <Image
-        source={{ uri: item.image_url || 'https://via.placeholder.com/50' }} // Usa una imagen por defecto si no tiene URL
+        source={{ uri: item.image_url || 'https://via.placeholder.com/50' }}
         style={styles.avatar}
       />
     )}
@@ -20,12 +18,13 @@ const MessageItem = ({ item }) => (
       style={[styles.messageBubble, item.sender === 'user' ? styles.bubbleUser : styles.bubbleDoctor]}
     >
       <Text style={styles.messageText}>{item.message}</Text>
-      <Text style={styles.messageTime}>{item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : 'Unknown time'}</Text>
+      <Text style={styles.messageTime}>
+        {item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleTimeString() : 'Unknown time'}
+      </Text>
     </View>
-    {/* Mostrar la imagen del usuario si es un mensaje del usuario */}
     {item.sender === 'user' && (
       <Image
-        source={{ uri: item.image_url || 'https://via.placeholder.com/50' }} // Usa una imagen por defecto si no tiene URL
+        source={{ uri: item.image_url || 'https://via.placeholder.com/50' }}
         style={styles.avatar}
       />
     )}
@@ -33,48 +32,40 @@ const MessageItem = ({ item }) => (
 );
 
 export default function ChatScreen({ route, navigation }) {
-  const { doctorId, doctorName } = route.params;  // Obtener el doctorId y doctorName desde las props
+  const { doctorId, doctorName } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Cargar los mensajes previos
+  const db = getFirestore();
+  const auth = getAuth();
+
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const userId = await AsyncStorage.getItem('userId');
-        if (!userId) {
-          Alert.alert('Error', 'No se encontró el ID del usuario.');
+        const user = auth.currentUser;
+        if (!user) {
+          Alert.alert('Error', 'Debes iniciar sesión para ver los mensajes.');
           return;
         }
 
-        // Obtener los mensajes entre el usuario y el doctor
-        const response = await api.get(`/messages/user/${userId}/doctor/${doctorId}`);
-        
-        // Agregar URLs de imagen para el usuario y doctor si no las tienen
-        const messagesWithImages = await Promise.all(response.data.map(async (msg) => {
-          // Obtener la imagen del doctor si es un mensaje del doctor
-          let doctorImageUrl = 'https://via.placeholder.com/50'; // Imagen por defecto
-          if (msg.sender === 'doctor') {
-            const doctorResponse = await api.get(`/doctors/${doctorId}`);
-            doctorImageUrl = doctorResponse.data.image_url || 'https://via.placeholder.com/50'; // URL de imagen del doctor
-          }
+        const messagesQuery = query(
+          collection(db, 'messages'),
+          where('doctorId', '==', doctorId),
+          where('userId', '==', user.uid),
+          orderBy('timestamp', 'asc')
+        );
 
-          // Obtener la imagen del usuario si es un mensaje del usuario
-          let userImageUrl = 'https://via.placeholder.com/50'; // Imagen por defecto
-          if (msg.sender === 'user') {
-            const userResponse = await api.get(`/users/${userId}`);
-            userImageUrl = userResponse.data.image_url || 'https://via.placeholder.com/50'; // URL de imagen del usuario
-          }
+        const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+          const messagesData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setMessages(messagesData);
+          setLoading(false);
+        });
 
-          return {
-            ...msg,
-            image_url: msg.sender === 'user' ? userImageUrl : doctorImageUrl,
-          };
-        }));
-
-        setMessages(messagesWithImages); // Asignar los mensajes a la lista
-        setLoading(false);
+        return () => unsubscribe();
       } catch (error) {
         console.error('Error al obtener los mensajes:', error);
         setLoading(false);
@@ -91,37 +82,39 @@ export default function ChatScreen({ route, navigation }) {
     }
 
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) {
-        Alert.alert('Error', 'No se encontró el ID del usuario.');
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert('Error', 'Debes iniciar sesión para enviar un mensaje.');
         return;
       }
 
-      // Enviar el mensaje
-      const response = await api.post('/messages', {
-        user_id: userId,
-        doctor_id: doctorId,
+      // Enviar el mensaje del usuario
+      await addDoc(collection(db, 'messages'), {
+        userId: user.uid,
+        doctorId,
         message: newMessage,
         sender: 'user', // El mensaje es del usuario
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
       });
 
-      // Si el mensaje fue enviado correctamente, lo agregamos a la lista
-      if (response.status === 201) {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            message: newMessage,
-            sender: 'user',
-            timestamp: new Date().toISOString(),
-            image_url: 'https://via.placeholder.com/50', // Agregar URL de imagen del usuario
-          },
-        ]);
-        setNewMessage(''); // Limpiar el campo de entrada
-      }
+      // Limpiar el campo de entrada
+      setNewMessage('');
+
+      // Responder automáticamente con un mensaje de "Lorem Ipsum"
+      const loremMessage =
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sit amet accumsan arcu. Sed ullamcorper.";
+      await addDoc(collection(db, 'messages'), {
+        userId: user.uid,
+        doctorId,
+        message: loremMessage,
+        sender: 'doctor', // El mensaje es del doctor
+        timestamp: new Date(),
+      });
+
+      Alert.alert('Éxito', 'Mensaje enviado correctamente.');
     } catch (error) {
       console.error('Error al enviar el mensaje:', error);
-      Alert.alert('Error', 'Hubo un problema al enviar el mensaje');
+      Alert.alert('Error', 'Hubo un problema al enviar el mensaje.');
     }
   };
 
@@ -131,7 +124,6 @@ export default function ChatScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Encabezado */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#4E89E8" />
@@ -142,15 +134,13 @@ export default function ChatScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Lista de mensajes */}
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id ? item.id.toString() : `${item.timestamp}`} // Usar timestamp si no hay id
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => <MessageItem item={item} />}
         contentContainerStyle={styles.messagesList}
       />
 
-      {/* Barra de entrada */}
       <View style={styles.inputContainer}>
         <Ionicons name="happy-outline" size={24} color="#4E89E8" style={styles.icon} />
         <TextInput

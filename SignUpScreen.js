@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Alert, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
-import api from './api';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from './firebase-config';
 
 export default function SignUpScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -46,14 +48,24 @@ export default function SignUpScreen({ navigation }) {
       return;
     }
 
-    // Enviar solicitud a la API
+    // Registro con Firebase
     try {
-      await api.post('/users/register', { name: username, email, phone, password });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Guardar datos adicionales en Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        username,
+        email,
+        phone,
+        createdAt: new Date(),
+      });
+
       Alert.alert('Éxito', 'Usuario registrado correctamente.');
       navigation.navigate('SignIn');
     } catch (error) {
-      console.error('Error durante el registro:', error.response?.data || error.message);
-      Alert.alert('Error', error.response?.data?.message || 'Error al registrar el usuario.');
+      console.error('Error durante el registro:', error.message);
+      Alert.alert('Error', error.message || 'Error al registrar el usuario.');
     }
   };
 
@@ -127,31 +139,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     justifyContent: 'center',
     marginLeft: 15,
-    marginTop:-60,
+    marginTop: -60,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    alignItems: "baseline",
+    alignItems: 'baseline',
     color: '#000000',
-    marginLeft:35,
-    marginTop:80,
+    marginLeft: 35,
+    marginTop: 80,
   },
-  title4:{
-    marginLeft:5,
-    color:"#2582ff",
+  title4: {
+    marginLeft: 5,
+    color: '#2582ff',
     fontWeight: 'bold',
-
   },
-  title3:{
+  title3: {
     color: '#000000',
-
   },
-  title2:{
+  title2: {
     flexDirection: 'row', // Los elementos se colocarán horizontalmente
     padding: 5,
     marginLeft: 27,
-
   },
   input: {
     width: 300,
@@ -162,10 +171,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo semitransparente para mejor visibilidad
   },
-  subin:{
-    color:'gray',
-    marginBottom:2,
-
+  subin: {
+    color: 'gray',
+    marginBottom: 2,
   },
   sign: {
     width: 300,

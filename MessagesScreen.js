@@ -9,48 +9,45 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import api from './api'; // Configuración de Axios para la API
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getFirestore, collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 export default function MyChatsScreen({ navigation }) {
-  const [chats, setChats] = useState([]); // Lista de chats con los doctores
-  const [loading, setLoading] = useState(true); // Estado de carga
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const db = getFirestore();
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const userId = await AsyncStorage.getItem('userId');
-        if (!userId) {
+        const user = auth.currentUser;
+        if (!user) {
           Alert.alert('Error', 'Usuario no encontrado');
           return;
         }
 
-        // Obtener los mensajes entre el usuario y los doctores
-        const response = await api.get(`/messages/user/${userId}`);
-        if (response.data.length === 0) {
-          Alert.alert('No chats', 'No tienes chats previos');
-        } else {
+        // Consulta para obtener los mensajes del usuario agrupados por doctor
+        const messagesQuery = query(
+          collection(db, 'messages'),
+          where('userId', '==', user.uid),
+          orderBy('timestamp', 'desc')
+        );
+
+        const unsubscribe = onSnapshot(messagesQuery, async (snapshot) => {
+          const messages = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
           // Agrupar los mensajes por doctor y obtener el último mensaje
-          const chatsWithDoctorInfo = await Promise.all(
-            response.data.map(async (message) => {
-              // Obtener el doctor_id de cada mensaje
-              const doctorResponse = await api.get(`/doctors/${message.doctor_id}`);
-              return {
-                ...message,
-                doctorName: doctorResponse.data.name,
-                doctorImage: doctorResponse.data.image_url || 'https://via.placeholder.com/50',
-                created_at: message.created_at,
-                doctor_id: message.doctor_id,
-              };
-            })
-          );
-
-          // Agrupar los chats por doctor y obtener el último mensaje
-          const groupedChats = groupChatsByDoctor(chatsWithDoctorInfo);
+          const groupedChats = groupChatsByDoctor(messages);
           setChats(groupedChats);
-        }
+          setLoading(false);
+        });
 
-        setLoading(false);
+        return () => unsubscribe();
       } catch (error) {
         console.error('Error al obtener los chats:', error);
         Alert.alert('Error', 'Hubo un problema al cargar los chats');
@@ -61,67 +58,54 @@ export default function MyChatsScreen({ navigation }) {
     fetchChats();
   }, []);
 
-  // Función para agrupar los mensajes por doctor y obtener el último mensaje
   const groupChatsByDoctor = (messages) => {
     const grouped = {};
 
-    // Agrupamos los mensajes por doctor y seleccionamos el más reciente
     messages.forEach((message) => {
-      if (!grouped[message.doctor_id]) {
-        grouped[message.doctor_id] = {
-          doctor_id: message.doctor_id,
-          doctor_name: message.doctorName,
-          doctor_image: message.doctorImage,
-          last_message: message.message,  // Guardamos el primer mensaje como el último
-          created_at: message.created_at, // Fecha del primer mensaje
+      if (!grouped[message.doctorId]) {
+        grouped[message.doctorId] = {
+          doctorId: message.doctorId,
+          lastMessage: message.message,
+          timestamp: message.timestamp,
         };
-      } else {
-        // Comparamos la fecha de creación para actualizar con el mensaje más reciente
-        if (new Date(message.created_at) > new Date(grouped[message.doctor_id].created_at)) {
-          grouped[message.doctor_id].last_message = message.message;
-          grouped[message.doctor_id].created_at = message.created_at;
-        }
+      } else if (new Date(message.timestamp.toDate()) > new Date(grouped[message.doctorId].timestamp.toDate())) {
+        grouped[message.doctorId].lastMessage = message.message;
+        grouped[message.doctorId].timestamp = message.timestamp;
       }
     });
 
-    // Convertir el objeto en un array para usarlo en el FlatList
     return Object.values(grouped);
   };
 
-  // Función para navegar al chat con el doctor
   const handleChatPress = (doctorId) => {
     navigation.navigate('Chat', { doctorId });
   };
 
-  // Si estamos cargando, mostrar indicador de carga
   if (loading) {
     return <Text>Cargando chats...</Text>;
   }
 
   return (
     <View style={styles.container}>
-      {/* Encabezado */}
       <View style={styles.header}>
         <Text style={styles.title}>My Chats</Text>
       </View>
 
-      {/* Lista de chats */}
       <FlatList
         data={chats}
-        keyExtractor={(item) => item.doctor_id.toString()} // Usamos doctor_id como key
+        keyExtractor={(item) => item.doctorId}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.chatCard}
-            onPress={() => handleChatPress(item.doctor_id)} // Navegar al chat
+            onPress={() => handleChatPress(item.doctorId)}
           >
             <Image
-              source={{ uri: item.doctor_image }}
+              source={{ uri: 'https://via.placeholder.com/50' }}
               style={styles.avatar}
             />
             <View style={styles.chatInfo}>
-              <Text style={styles.chatDoctorName}>{item.doctor_name}</Text>
-              {/* Muestra el último mensaje debajo del nombre */}
-              <Text style={styles.chatLastMessage}>{item.last_message}</Text>
+              <Text style={styles.chatDoctorName}>{`Doctor ${item.doctorId}`}</Text>
+              <Text style={styles.chatLastMessage}>{item.lastMessage}</Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#4E89E8" />
           </TouchableOpacity>
@@ -176,6 +160,6 @@ const styles = StyleSheet.create({
   chatLastMessage: {
     fontSize: 14,
     color: '#777',
-    marginTop: 5,  // Agregamos un margen para separar el mensaje del nombre
+    marginTop: 5,
   },
 });

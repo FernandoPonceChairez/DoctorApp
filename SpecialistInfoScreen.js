@@ -1,34 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, Image, TouchableOpacity, Alert, ScrollView, TextInput, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Para íconos de los botones
+import { getFirestore, collection, addDoc, query, where, onSnapshot } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import api from './api'; // Asegúrate de que este archivo esté configurado para conectar a tu API
 
 const SpecialistInfoScreen = ({ route, navigation }) => {
   const { doctorId } = route.params; // Recibimos el ID del doctor
   const [doctor, setDoctor] = useState(null); // Para almacenar la información del doctor
   const [loading, setLoading] = useState(true); // Estado para cargar la información
+  const [reviews, setReviews] = useState([]); // Lista de reseñas
+  const [newReview, setNewReview] = useState(''); // Comentario nuevo
+  const [rating, setRating] = useState(0); // Calificación nueva (1-5 estrellas)
+
+  const db = getFirestore(); // Inicializa Firestore
+  const auth = getAuth(); // Inicializa Auth
 
   // Fetch de los datos del doctor desde la API
   useEffect(() => {
     const fetchDoctorInfo = async () => {
       try {
-        console.log('Doctor ID:', doctorId); // Verifica que el doctorId esté correctamente recibido
-
-        // Realizamos la consulta a la API usando el doctorId
         const response = await api.get(`/doctors/${doctorId}`);
-        console.log('Doctor Data:', response.data); // Verifica los datos de la respuesta
-
-        // Verifica si la respuesta es válida
         if (response && response.data) {
-          setDoctor(response.data); // Asignamos los datos del doctor a la variable de estado
+          setDoctor(response.data);
         } else {
           throw new Error('Doctor no encontrado');
         }
-
-        setLoading(false); // Cuando los datos se obtienen, cambiamos el estado de carga
+        setLoading(false);
       } catch (error) {
         console.error('Error al obtener información del doctor:', error);
-        setLoading(false); // Desactivamos el estado de carga
+        setLoading(false);
         Alert.alert('Error', 'No se pudo obtener la información del doctor.');
       }
     };
@@ -36,7 +37,65 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
     fetchDoctorInfo();
   }, [doctorId]);
 
-  // Si aún estamos cargando, mostramos un mensaje de carga
+  // Fetch de las reseñas desde Firebase
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const reviewsQuery = query(
+          collection(db, 'reviews'),
+          where('doctorId', '==', doctorId)
+        );
+
+        const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
+          const reviewsData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setReviews(reviewsData);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Error al obtener las reseñas:', error);
+        Alert.alert('Error', 'No se pudieron cargar las reseñas.');
+      }
+    };
+
+    fetchReviews();
+  }, [doctorId]);
+
+  // Manejar la adición de una nueva reseña
+  const handleAddReview = async () => {
+    if (rating === 0 || newReview.trim() === '') {
+      Alert.alert('Error', 'Por favor selecciona una calificación y escribe un comentario.');
+      return;
+    }
+
+    try {
+      const user = auth.currentUser; // Usuario actual
+      if (!user) {
+        Alert.alert('Error', 'Debes iniciar sesión para dejar una reseña.');
+        return;
+      }
+
+      await addDoc(collection(db, 'reviews'), {
+        doctorId,
+        userId: user.uid,
+        userName: user.displayName || 'Usuario Anónimo',
+        rating,
+        comment: newReview,
+        createdAt: new Date(),
+      });
+
+      setNewReview('');
+      setRating(0);
+      Alert.alert('Éxito', 'Tu reseña se ha agregado correctamente.');
+    } catch (error) {
+      console.error('Error al agregar la reseña:', error);
+      Alert.alert('Error', 'No se pudo agregar la reseña.');
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -45,7 +104,6 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
     );
   }
 
-  // Si no hay datos del doctor, mostramos un mensaje de error
   if (!doctor) {
     return (
       <View style={styles.container}>
@@ -55,8 +113,6 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
   }
 
   return (
-    
-    
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -65,10 +121,9 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
         <Text style={styles.headerTitle}>{doctor.name}</Text>
       </View>
 
-      {/* Imagen del Doctor */}
       <Image 
         style={styles.image}
-        source={{ uri: doctor.image_url || 'https://via.placeholder.com/150' }} // Usamos el image_url del doctor, si está disponible
+        source={{ uri: doctor.image_url || 'https://via.placeholder.com/150' }}
       />
 
       <View style={styles.infoContainer}>
@@ -81,10 +136,7 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
             <Ionicons style={styles.iconb} name="videocam" size={15} />
             <Text style={styles.textbut}>Video Call</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton3} onPress={() => {
-            console.log('Doctor ID:',  doctorId); // Verifica que el ID se pase correctamente
-            navigation.navigate('Chat', { doctorId: doctorId }); // Navega a la pantalla de Chat pasando el ID del doctor
-          }}>
+          <TouchableOpacity style={styles.iconButton3} onPress={() => navigation.navigate('Chat', { doctorId })}>
             <Ionicons name="chatbubbles" size={15} style={styles.iconb} />
             <Text style={styles.textbut}>Message</Text>
           </TouchableOpacity>
@@ -93,7 +145,7 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
         <Text style={styles.specia}>{doctor.specialty}</Text>
         <Text style={styles.cli}>{doctor.clinic}</Text>
         <Text style={styles.subtitle}>About {doctor.name}</Text>
-        <Text>{doctor.bio || 'Highly skilled professional with experience in the field. Has participated in various advanced training programs.'}</Text>
+        <Text>{doctor.bio || 'Highly skilled professional with experience in the field.'}</Text>
 
         <View style={styles.footer}>
           <View>
@@ -106,20 +158,58 @@ const SpecialistInfoScreen = ({ route, navigation }) => {
           </View>
           <View>
             <Text style={styles.patien}>Reviews</Text>
-            <Text style={styles.patien2}>{doctor.review_count || 'N/A'}</Text>
+            <Text style={styles.patien2}>{reviews.length || 'N/A'}</Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.botonc} onPress={() => navigation.navigate('Appointment', { doctor: doctor })}>
+        <TouchableOpacity style={styles.botonc} onPress={() => navigation.navigate('Appointment', { doctor })}>
           <Text style={styles.buttonText}>Book an Appointment</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Agregar Nueva Reseña */}
+      <View>
+        <Text style={styles.subtitle}>Agregar Reseña</Text>
+        <View style={styles.starsContainer}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <TouchableOpacity key={star} onPress={() => setRating(star)}>
+              <Ionicons
+                name={star <= rating ? 'star' : 'star-outline'}
+                size={24}
+                color="#FFD700"
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Escribe tu reseña aquí..."
+          value={newReview}
+          onChangeText={setNewReview}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
+          <Text style={styles.addButtonText}>Agregar Reseña</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Lista de Reseñas */}
+      <FlatList
+        data={reviews}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.reviewItem}>
+            <Text style={styles.reviewerName}>{item.userName}</Text>
+            <Text style={styles.reviewText}>{item.comment}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
   },
   image: {
     width: '100%',
@@ -134,9 +224,8 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 50,
   },
-  infoContainer:{
-    padding:20
-
+  infoContainer: {
+    padding: 20,
   },
   headerTitle: {
     fontSize: 20,
@@ -233,6 +322,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  // Estilo para la sección de reseñas
+  reviewsContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  reviewItem: {
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 2, // Sombra para Android
+    shadowColor: '#000', // Sombra para iOS
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  reviewText: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: '#F9F9F9',
+  },
+  addButton: {
+    backgroundColor: '#4E89E8',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+  scrollContainer: {
+    flex: 1,
+  },
 });
+
 
 export default SpecialistInfoScreen;

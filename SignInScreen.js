@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Alert, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Alert,
+  StyleSheet,
+  ImageBackground,
+  TouchableOpacity,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from './api';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebase-config'; // Asegúrate de que este archivo esté correctamente configurado
 
 export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -9,20 +18,24 @@ export default function SignInScreen({ navigation }) {
 
   const handleSignIn = async () => {
     try {
-      const response = await api.post('/users/login', { email, password });
-      const { id } = response.data.user; // Asegúrate de que el backend devuelve el ID del usuario
-      await AsyncStorage.setItem('userId', id.toString()); // Guarda el `userId`
-      Alert.alert('Success', 'Logged in successfully');
+      // Validar credenciales con Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Guarda el UID del usuario en AsyncStorage
+      await AsyncStorage.setItem('userId', user.uid);
+
+      Alert.alert('Éxito', 'Sesión iniciada correctamente');
       navigation.navigate('Main'); // Navegar a la pantalla principal
     } catch (error) {
-      console.error('Error during login:', error.response?.data || error.message);
-      Alert.alert('Error', error.response?.data?.message || 'Invalid credentials');
+      console.error('Error durante el inicio de sesión:', error.message);
+      Alert.alert('Error', error.message || 'Credenciales inválidas');
     }
   };
 
   return (
     <ImageBackground
-      source={require('./assets/Back2.png')} 
+      source={require('./assets/Back2.png')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -57,44 +70,37 @@ export default function SignInScreen({ navigation }) {
   );
 }
 
-
 const styles = StyleSheet.create({
-  
   container: {
-      flex: 1,
-      paddingHorizontal: 15,
-      justifyContent: 'center',
-      marginLeft: 15,
-      marginBottom:200,
-   
+    flex: 1,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    marginLeft: 15,
+    marginBottom: 200,
   },
   background: {
     flex: 1,
   },
-
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    alignItems: "baseline",
+    alignItems: 'baseline',
     color: '#000000',
-    marginLeft:35,
-    marginTop:80,
+    marginLeft: 35,
+    marginTop: 80,
   },
-  title4:{
-    marginLeft:5,
-    color:"#2582ff",
+  title4: {
+    marginLeft: 5,
+    color: '#2582ff',
     fontWeight: 'bold',
-
   },
-  title3:{
+  title3: {
     color: '#000000',
-
   },
-  title2:{
+  title2: {
     flexDirection: 'row', // Los elementos se colocarán horizontalmente
     padding: 5,
     marginLeft: 27,
-
   },
   input: {
     width: 300,
@@ -105,10 +111,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo semitransparente para mejor visibilidad
   },
-  subin:{
-    color:'gray',
-    marginBottom:2,
-
+  subin: {
+    color: 'gray',
+    marginBottom: 2,
   },
   sign: {
     width: 300,
